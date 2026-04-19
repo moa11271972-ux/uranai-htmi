@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>営業アプリ｜徒歩営業順</title>
+  <title>営業アプリ｜現在地・徒歩順・訪問管理</title>
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -29,7 +29,7 @@
     }
 
     .wrap{
-      max-width:1300px;
+      max-width:1380px;
       margin:0 auto;
       padding:14px;
     }
@@ -49,11 +49,15 @@
       align-items:center;
     }
 
-    select, button, input{
+    select, button, input, textarea{
       padding:12px;
       border-radius:12px;
       border:1px solid #d9e0ef;
       font-size:14px;
+    }
+
+    input{
+      min-width:180px;
     }
 
     button{
@@ -61,13 +65,41 @@
       color:#fff;
       border:none;
       cursor:pointer;
+      white-space:nowrap;
     }
 
     button:hover{ opacity:0.92; }
 
+    .status-box{
+      margin-top:10px;
+      padding:10px 12px;
+      background:#f7faff;
+      border:1px solid #e1e9fb;
+      border-radius:12px;
+      font-size:13px;
+      color:#3b4d6b;
+      line-height:1.6;
+    }
+
+    .summary-bar{
+      margin-top:10px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .summary-chip{
+      background:#eef3ff;
+      color:#2146d0;
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:700;
+    }
+
     .grid{
       display:grid;
-      grid-template-columns:390px 1fr;
+      grid-template-columns:420px 1fr;
       gap:14px;
     }
 
@@ -102,6 +134,11 @@
     .card.active{
       background:#eaf0ff;
       border-left:5px solid #2146d0;
+    }
+
+    .card.visited{
+      background:#f2f6f2;
+      opacity:0.85;
     }
 
     .topline{
@@ -161,6 +198,39 @@
       color:#2146d0;
     }
 
+    .action-row{
+      margin-top:10px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+    }
+
+    .visit-check{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      font-size:13px;
+      font-weight:700;
+      color:#2c4b85;
+    }
+
+    .mini-btn{
+      padding:8px 10px;
+      font-size:12px;
+      border-radius:10px;
+      background:#4f7cff;
+    }
+
+    .memo-box{
+      width:100%;
+      min-height:58px;
+      margin-top:10px;
+      resize:vertical;
+      font-size:13px;
+      line-height:1.5;
+    }
+
     #map{
       width:100%;
       height:76vh;
@@ -199,7 +269,7 @@
         grid-template-columns:1fr;
       }
       .list{
-        height:320px;
+        height:360px;
       }
       #map{
         height:58vh;
@@ -209,7 +279,7 @@
   </style>
 </head>
 <body>
-  <header>営業アプリ｜天王寺区・阿倍野区 徒歩営業順</header>
+  <header>営業アプリ｜現在地・徒歩順・訪問管理</header>
 
   <div class="wrap">
     <div class="filter-box">
@@ -227,17 +297,31 @@
         </select>
 
         <input id="keyword" type="text" placeholder="事業所名・住所で検索" />
+        <input id="placeSearch" type="text" placeholder="現在地の近くを検索（例: 天王寺駅）" />
 
         <button onclick="applyFilters()">絞り込み</button>
         <button onclick="resetFilters()">リセット</button>
-        <button onclick="sortByWalkingOrder()">現在地から徒歩順に並べる</button>
-        <button onclick="fitVisibleMarkers()">地図を全件表示</button>
+        <button onclick="getCurrentLocation()">現在地を取得</button>
+        <button onclick="searchPlaceAndMove()">場所検索</button>
+        <button onclick="sortByWalkingOrder()">現在地から徒歩順</button>
+        <button onclick="jumpToNextUnvisited()">次の未訪問へ</button>
+        <button onclick="clearVisitData()">訪問記録を消去</button>
+      </div>
+
+      <div id="statusBox" class="status-box">
+        現在地はまだ取得していません。
+      </div>
+
+      <div class="summary-bar">
+        <div class="summary-chip" id="totalCount">全件: 0</div>
+        <div class="summary-chip" id="visitedCount">訪問済み: 0</div>
+        <div class="summary-chip" id="remainingCount">未訪問: 0</div>
       </div>
     </div>
 
     <div class="grid">
       <div class="panel">
-        <div class="panel-title">営業先リスト（徒歩営業順）</div>
+        <div class="panel-title">営業先リスト</div>
         <div id="list" class="list"></div>
       </div>
 
@@ -248,8 +332,8 @@
     </div>
 
     <div class="footer-note">
-      「現在地から徒歩順に並べる」を押すと、現在地から近い順に訪問しやすい並びへ変更します。<br>
-      カードを押すと地図移動、電話番号タップで発信、Googleマップ導線も使えます。
+      訪問済みにチェックすると、自動で次の未訪問先へ移動します。<br>
+      メモは端末内に保存されるので、ページを開き直しても残ります。
     </div>
   </div>
 
@@ -257,6 +341,7 @@
   <script>
     const offices = [
       {
+        id: "tennoji-houkatsu",
         name: "天王寺区地域包括支援センター",
         ward: "天王寺区",
         type: "地域包括支援センター",
@@ -266,6 +351,7 @@
         lng: 135.5166
       },
       {
+        id: "abeno-hokubu-houkatsu",
         name: "阿倍野区北部地域包括支援センター",
         ward: "阿倍野区",
         type: "地域包括支援センター",
@@ -275,6 +361,7 @@
         lng: 135.5109
       },
       {
+        id: "abeno-chubu-houkatsu",
         name: "阿倍野区中部地域包括支援センター",
         ward: "阿倍野区",
         type: "地域包括支援センター",
@@ -284,6 +371,7 @@
         lng: 135.5159
       },
       {
+        id: "abeno-houkatsu",
         name: "阿倍野区地域包括支援センター",
         ward: "阿倍野区",
         type: "地域包括支援センター",
@@ -293,6 +381,7 @@
         lng: 135.5015
       },
       {
+        id: "ueroku-care",
         name: "うえろくケアプランセンター",
         ward: "天王寺区",
         type: "居宅介護支援事業所",
@@ -302,6 +391,7 @@
         lng: 135.5208
       },
       {
+        id: "shitennoji-care",
         name: "四天王寺ケアプランセンター",
         ward: "天王寺区",
         type: "居宅介護支援事業所",
@@ -311,6 +401,7 @@
         lng: 135.5310
       },
       {
+        id: "yuhigaoka-care",
         name: "夕陽ヶ丘ケアサービス居宅介護支援事業所",
         ward: "天王寺区",
         type: "居宅介護支援事業所",
@@ -320,6 +411,7 @@
         lng: 135.5278
       },
       {
+        id: "nakayoshi-tennoji",
         name: "介護支援センターなかよし天王寺",
         ward: "天王寺区",
         type: "居宅介護支援事業所",
@@ -329,6 +421,7 @@
         lng: 135.5308
       },
       {
+        id: "care-reach",
         name: "居宅介護支援事業所ケアリーチ",
         ward: "天王寺区",
         type: "居宅介護支援事業所",
@@ -338,6 +431,7 @@
         lng: 135.5180
       },
       {
+        id: "care21-abeno",
         name: "ケア21阿倍野",
         ward: "阿倍野区",
         type: "居宅介護支援事業所",
@@ -347,6 +441,7 @@
         lng: 135.5184
       },
       {
+        id: "abeno-ishikai",
         name: "阿倍野区医師会ケアセンター",
         ward: "阿倍野区",
         type: "居宅介護支援事業所",
@@ -356,6 +451,7 @@
         lng: 135.5068
       },
       {
+        id: "loopcare",
         name: "居宅介護支援事業所 るぅぷけぁ",
         ward: "阿倍野区",
         type: "居宅介護支援事業所",
@@ -365,6 +461,7 @@
         lng: 135.5161
       },
       {
+        id: "hanamizuki",
         name: "介護支援センターはなみずき",
         ward: "阿倍野区",
         type: "居宅介護支援事業所",
@@ -374,6 +471,7 @@
         lng: 135.5038
       },
       {
+        id: "shien-club",
         name: "居宅支援倶楽部",
         ward: "阿倍野区",
         type: "居宅介護支援事業所",
@@ -393,16 +491,34 @@
     const wardFilter = document.getElementById("wardFilter");
     const typeFilter = document.getElementById("typeFilter");
     const keywordInput = document.getElementById("keyword");
+    const placeSearchInput = document.getElementById("placeSearch");
+    const statusBox = document.getElementById("statusBox");
+    const totalCountEl = document.getElementById("totalCount");
+    const visitedCountEl = document.getElementById("visitedCount");
+    const remainingCountEl = document.getElementById("remainingCount");
 
     let markers = [];
     let visibleMarkers = [];
-    let currentData = [...offices];
     let currentPosition = null;
     let userMarker = null;
+    let searchMarker = null;
     let routeLine = null;
+    let currentRenderedData = [...offices];
 
-    function googleMapsUrl(address){
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    function getVisitState(id){
+      return localStorage.getItem("visit_" + id) === "1";
+    }
+
+    function setVisitState(id, value){
+      localStorage.setItem("visit_" + id, value ? "1" : "0");
+    }
+
+    function getMemo(id){
+      return localStorage.getItem("memo_" + id) || "";
+    }
+
+    function setMemo(id, text){
+      localStorage.setItem("memo_" + id, text);
     }
 
     function googleMapsDirectionsUrl(destination){
@@ -423,7 +539,7 @@
     }
 
     function walkingMinutesFromKm(km){
-      return Math.round((km / 4.5) * 60);
+      return Math.max(1, Math.round((km / 4.5) * 60));
     }
 
     function formatDistance(km){
@@ -431,6 +547,20 @@
         return `${Math.round(km * 1000)}m`;
       }
       return `${km.toFixed(2)}km`;
+    }
+
+    function setStatus(text){
+      statusBox.innerHTML = text;
+    }
+
+    function updateSummary(data){
+      const total = data.length;
+      const visited = data.filter(o => getVisitState(o.id)).length;
+      const remaining = total - visited;
+
+      totalCountEl.textContent = `全件: ${total}`;
+      visitedCountEl.textContent = `訪問済み: ${visited}`;
+      remainingCountEl.textContent = `未訪問: ${remaining}`;
     }
 
     function getFilteredData(){
@@ -459,7 +589,7 @@
     }
 
     function renderListAndMap(data){
-      currentData = [...data];
+      currentRenderedData = [...data];
       listEl.innerHTML = "";
       clearMarkers();
 
@@ -469,8 +599,10 @@
       }
 
       data.forEach((office, index) => {
+        const visited = getVisitState(office.id);
+        const memo = getMemo(office.id);
         const item = document.createElement("div");
-        item.className = "card";
+        item.className = "card" + (visited ? " visited" : "");
 
         const distanceText = office.distanceFromPrev != null
           ? `前地点から ${formatDistance(office.distanceFromPrev)} / 徒歩約${walkingMinutesFromKm(office.distanceFromPrev)}分`
@@ -496,31 +628,38 @@
           <div class="badge-row">
             <span class="badge">${office.ward}</span>
             <span class="badge">${office.type}</span>
+            ${visited ? '<span class="badge" style="background:#e8f6e8;color:#208340;">訪問済み</span>' : ""}
+          </div>
+
+          <div class="action-row">
+            <label class="visit-check">
+              <input type="checkbox" class="visit-toggle" ${visited ? "checked" : ""}>
+              訪問済みにする
+            </label>
+            <button class="mini-btn next-btn">次へ移動</button>
           </div>
 
           <a class="route-link" href="${googleMapsDirectionsUrl(office.address)}" target="_blank" rel="noopener noreferrer">
             徒歩ルートをGoogleマップで開く
           </a>
+
+          <textarea class="memo-box" placeholder="営業メモを入力">${memo}</textarea>
         `;
         listEl.appendChild(item);
 
+        const iconHtml = visited
+          ? `<div style="
+              width:30px;height:30px;border-radius:999px;background:#2aa84a;color:#fff;
+              display:flex;align-items:center;justify-content:center;font-weight:700;
+              border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.25);">${index + 1}</div>`
+          : `<div style="
+              width:30px;height:30px;border-radius:999px;background:#2146d0;color:#fff;
+              display:flex;align-items:center;justify-content:center;font-weight:700;
+              border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.25);">${index + 1}</div>`;
+
         const icon = L.divIcon({
           className: "custom-number-icon",
-          html: `
-            <div style="
-              width:30px;
-              height:30px;
-              border-radius:999px;
-              background:#2146d0;
-              color:#fff;
-              display:flex;
-              align-items:center;
-              justify-content:center;
-              font-weight:700;
-              border:2px solid #fff;
-              box-shadow:0 2px 8px rgba(0,0,0,0.25);
-            ">${index + 1}</div>
-          `,
+          html: iconHtml,
           iconSize: [30, 30],
           iconAnchor: [15, 15]
         });
@@ -539,11 +678,35 @@
         visibleMarkers.push(marker);
         linePoints.push([office.lat, office.lng]);
 
-        item.addEventListener("click", () => {
+        item.addEventListener("click", (e) => {
+          if(e.target.classList.contains("visit-toggle") || e.target.classList.contains("memo-box") || e.target.classList.contains("next-btn")) return;
           document.querySelectorAll(".card").forEach(c => c.classList.remove("active"));
           item.classList.add("active");
           map.setView([office.lat, office.lng], 16);
           marker.openPopup();
+        });
+
+        item.querySelector(".visit-toggle").addEventListener("change", (e) => {
+          const checked = e.target.checked;
+          setVisitState(office.id, checked);
+          renderListAndMap(currentRenderedData);
+          updateSummary(currentRenderedData);
+
+          if(checked){
+            setStatus(`${office.name} を訪問済みにしました。次の未訪問先へ移動します。`);
+            jumpToNextUnvisited();
+          }else{
+            setStatus(`${office.name} の訪問済みを解除しました。`);
+          }
+        });
+
+        item.querySelector(".memo-box").addEventListener("input", (e) => {
+          setMemo(office.id, e.target.value);
+        });
+
+        item.querySelector(".next-btn").addEventListener("click", (e) => {
+          e.stopPropagation();
+          jumpToNextUnvisited(index + 1);
         });
       });
 
@@ -554,12 +717,14 @@
         }).addTo(map);
       }
 
+      updateSummary(data);
       fitVisibleMarkers();
     }
 
     function fitVisibleMarkers(){
       const layers = [];
       if(userMarker) layers.push(userMarker);
+      if(searchMarker) layers.push(searchMarker);
       layers.push(...visibleMarkers);
       if(layers.length === 0) return;
       const group = L.featureGroup(layers);
@@ -575,6 +740,7 @@
       typeFilter.value = "all";
       keywordInput.value = "";
       renderListAndMap(offices);
+      setStatus("表示をリセットしました。");
     }
 
     function nearestNeighborSort(startPoint, items){
@@ -606,21 +772,16 @@
       return ordered;
     }
 
-    function sortByWalkingOrder(){
-      const filtered = getFilteredData();
-
-      if(filtered.length === 0){
-        alert("該当する営業先がありません。");
-        return;
-      }
-
+    function getCurrentLocation(){
       if(!navigator.geolocation){
         alert("この端末では現在地取得に対応していません。");
         return;
       }
 
+      setStatus("現在地を取得しています…");
+
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
+        async (pos) => {
           currentPosition = {
             lat: pos.coords.latitude,
             lng: pos.coords.longitude
@@ -630,16 +791,183 @@
             map.removeLayer(userMarker);
           }
 
-          userMarker = L.marker([currentPosition.lat, currentPosition.lng]).addTo(map)
-            .bindPopup("現在地");
+          if(searchMarker){
+            map.removeLayer(searchMarker);
+            searchMarker = null;
+          }
 
-          const ordered = nearestNeighborSort(currentPosition, filtered.map(x => ({...x})));
-          renderListAndMap(ordered);
+          userMarker = L.marker([currentPosition.lat, currentPosition.lng]).addTo(map)
+            .bindPopup("現在地")
+            .openPopup();
+
+          map.setView([currentPosition.lat, currentPosition.lng], 15);
+
+          const address = await reverseGeocode(currentPosition.lat, currentPosition.lng);
+          if(address){
+            setStatus(`現在地を取得しました。<br>住所目安: ${address}`);
+          }else{
+            setStatus(`現在地を取得しました。<br>緯度経度: ${currentPosition.lat.toFixed(5)}, ${currentPosition.lng.toFixed(5)}`);
+          }
         },
         () => {
-          alert("現在地を取得できませんでした。位置情報を許可してもう一度お試しください。");
+          setStatus("現在地を取得できませんでした。位置情報の許可をご確認ください。");
+          alert("現在地を取得できませんでした。");
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
         }
       );
+    }
+
+    async function reverseGeocode(lat, lng){
+      try{
+        const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=ja`;
+        const res = await fetch(url);
+        const data = await res.json();
+        return data.display_name || "";
+      }catch(e){
+        return "";
+      }
+    }
+
+    async function geocodePlace(query){
+      try{
+        const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=ja&q=${encodeURIComponent(query + " 大阪")}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if(data && data.length > 0){
+          return {
+            lat: parseFloat(data[0].lat),
+            lng: parseFloat(data[0].lon),
+            name: data[0].display_name
+          };
+        }
+      }catch(e){
+        console.log(e);
+      }
+      return null;
+    }
+
+    async function searchPlaceAndMove(){
+      const query = placeSearchInput.value.trim();
+      if(!query){
+        alert("検索したい場所を入力してください。");
+        return;
+      }
+
+      setStatus(`「${query}」を検索しています…`);
+
+      const result = await geocodePlace(query);
+      if(!result){
+        setStatus(`「${query}」は見つかりませんでした。`);
+        alert("場所が見つかりませんでした。");
+        return;
+      }
+
+      currentPosition = {
+        lat: result.lat,
+        lng: result.lng
+      };
+
+      if(searchMarker){
+        map.removeLayer(searchMarker);
+      }
+      if(userMarker){
+        map.removeLayer(userMarker);
+        userMarker = null;
+      }
+
+      searchMarker = L.marker([result.lat, result.lng]).addTo(map)
+        .bindPopup(`検索地点<br>${result.name}`)
+        .openPopup();
+
+      map.setView([result.lat, result.lng], 15);
+      setStatus(`検索地点を表示しました。<br>${result.name}`);
+    }
+
+    function sortByWalkingOrder(){
+      const filtered = getFilteredData();
+
+      if(filtered.length === 0){
+        alert("該当する営業先がありません。");
+        return;
+      }
+
+      if(!currentPosition){
+        alert("先に現在地を取得するか、場所検索をしてください。");
+        return;
+      }
+
+      const ordered = nearestNeighborSort(
+        currentPosition,
+        filtered.map(x => ({
+          ...x,
+          distanceFromPrev: null,
+          distanceFromStart: null
+        }))
+      );
+
+      renderListAndMap(ordered);
+      setStatus("現在地を起点に、近い順へ並べ替えました。");
+    }
+
+    function jumpToNextUnvisited(startIndex = 0){
+      const data = currentRenderedData;
+      if(data.length === 0) return;
+
+      let nextIndex = -1;
+
+      for(let i = startIndex; i < data.length; i++){
+        if(!getVisitState(data[i].id)){
+          nextIndex = i;
+          break;
+        }
+      }
+
+      if(nextIndex === -1){
+        for(let i = 0; i < startIndex; i++){
+          if(!getVisitState(data[i].id)){
+            nextIndex = i;
+            break;
+          }
+        }
+      }
+
+      if(nextIndex === -1){
+        setStatus("すべて訪問済みです。お疲れさまでした。");
+        alert("すべて訪問済みです。");
+        return;
+      }
+
+      const office = data[nextIndex];
+      map.setView([office.lat, office.lng], 16);
+
+      const card = listEl.children[nextIndex];
+      if(card){
+        document.querySelectorAll(".card").forEach(c => c.classList.remove("active"));
+        card.classList.add("active");
+        card.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+
+      if(markers[nextIndex]){
+        markers[nextIndex].openPopup();
+      }
+
+      setStatus(`次の未訪問先は「${office.name}」です。`);
+    }
+
+    function clearVisitData(){
+      if(!confirm("訪問済みチェックとメモをすべて消しますか？")) return;
+
+      offices.forEach(office => {
+        localStorage.removeItem("visit_" + office.id);
+        localStorage.removeItem("memo_" + office.id);
+      });
+
+      renderListAndMap(currentRenderedData);
+      setStatus("訪問記録とメモをすべて消去しました。");
     }
 
     renderListAndMap(offices);
