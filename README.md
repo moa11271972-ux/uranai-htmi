@@ -3,42 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>営業アプリ｜完全版</title>
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+  <title>営業アプリ｜大阪市全区 Premium</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; }
 
     body{
       margin:0;
       font-family:"Hiragino Sans","Yu Gothic","Meiryo",sans-serif;
-      background:#f4f7fb;
-      color:#222;
+      background:linear-gradient(180deg,#fffdf8 0%, #f7f1e4 100%);
+      color:#2b2418;
     }
 
     header{
-      background:linear-gradient(135deg,#2146d0,#4f7cff);
-      color:#fff;
-      padding:16px;
+      background:linear-gradient(135deg,#b08a3c,#e7c770 55%,#9b772f);
+      color:#fffdf7;
+      padding:18px 16px;
       text-align:center;
       font-size:22px;
       font-weight:700;
-      box-shadow:0 4px 12px rgba(0,0,0,0.15);
+      letter-spacing:0.04em;
+      box-shadow:0 6px 18px rgba(122,93,33,0.22);
     }
 
     .wrap{
-      max-width:1540px;
+      max-width:1680px;
       margin:0 auto;
       padding:14px;
     }
 
-    .toolbar{
-      background:#fff;
-      border-radius:16px;
+    .toolbar,.panel,.box{
+      background:rgba(255,252,245,0.97);
+      border-radius:18px;
+      box-shadow:0 10px 28px rgba(124,97,45,0.10);
+      border:1px solid rgba(198,165,94,0.20);
+    }
+
+    .toolbar,.box{
       padding:12px;
-      box-shadow:0 8px 22px rgba(0,0,0,0.08);
       margin-bottom:14px;
     }
 
@@ -49,36 +51,41 @@
       align-items:center;
     }
 
-    select, input, button, textarea{
-      border:1px solid #dbe3f2;
+    select,input,button,textarea{
+      border:1px solid #dbc796;
       border-radius:12px;
       padding:12px;
       font-size:14px;
-      background:#fff;
+      background:#fffdf8;
+      color:#2f271b;
     }
 
     input{ min-width:150px; }
 
     button{
       border:none;
-      background:#2146d0;
-      color:#fff;
+      background:linear-gradient(135deg,#b7903f,#d9b867);
+      color:#fffef9;
       cursor:pointer;
       white-space:nowrap;
+      box-shadow:0 4px 12px rgba(166,128,49,0.18);
     }
 
-    button:hover{ opacity:0.92; }
+    button:hover{ opacity:0.94; }
 
-    .danger-btn{ background:#c51616; }
+    .green-btn{ background:linear-gradient(135deg,#8a6b2f,#b79245); }
+    .orange-btn{ background:linear-gradient(135deg,#b67b2d,#d9a24e); }
+    .red-btn{ background:linear-gradient(135deg,#9a6a2f,#c89a4e); }
+    .purple-btn{ background:linear-gradient(135deg,#8a7444,#b89b5c); }
 
     .status-box{
       margin-top:10px;
       padding:10px 12px;
-      background:#f7faff;
-      border:1px solid #e1e9fb;
+      background:#fffaf0;
+      border:1px solid #e5d0a0;
       border-radius:12px;
       font-size:13px;
-      color:#3b4d6b;
+      color:#5d4a26;
       line-height:1.7;
     }
 
@@ -90,42 +97,41 @@
     }
 
     .chip{
-      background:#eef3ff;
-      color:#2146d0;
+      background:#f8efdc;
+      color:#8b6a2a;
       padding:8px 12px;
       border-radius:999px;
       font-size:13px;
       font-weight:700;
+      border:1px solid #e5d0a0;
     }
 
     .chip.red{
-      background:#ffe3e3;
-      color:#c51616;
+      background:#fff0e5;
+      color:#9a5d27;
     }
 
     .chip.orange{
-      background:#fff1db;
-      color:#b96a00;
+      background:#fff5e6;
+      color:#a06b1f;
     }
 
     .layout{
       display:grid;
-      grid-template-columns:470px 1fr;
+      grid-template-columns:540px 1fr;
       gap:14px;
     }
 
     .panel{
-      background:#fff;
-      border-radius:18px;
-      box-shadow:0 8px 22px rgba(0,0,0,0.08);
       overflow:hidden;
     }
 
     .panel-title{
       padding:14px 16px;
       font-weight:700;
-      border-bottom:1px solid #eef1f7;
-      background:#fafcff;
+      border-bottom:1px solid #eee0bc;
+      background:linear-gradient(180deg,#fffaf0 0%, #f7ecd1 100%);
+      color:#6b5325;
     }
 
     .list{
@@ -135,36 +141,18 @@
 
     .card{
       padding:14px 16px;
-      border-bottom:1px solid #eef1f7;
+      border-bottom:1px solid #f0e4c8;
       cursor:pointer;
       transition:0.2s;
-      background:#fff;
+      background:#fffdf8;
     }
 
-    .card:hover{ background:#f5f8ff; }
-
-    .card.active{
-      background:#eaf0ff;
-      border-left:5px solid #2146d0;
-    }
-
-    .card.visited{
-      background:#f2f9f2;
-    }
-
-    .card.today{
-      box-shadow: inset 0 0 0 2px #7a34c2;
-    }
-
-    .card.follow-today{
-      background:#fff4f4;
-      box-shadow: inset 0 0 0 2px #ff6b6b;
-    }
-
-    .card.follow-overdue{
-      background:#ffe7e7;
-      box-shadow: inset 0 0 0 3px #c51616;
-    }
+    .card:hover{ background:#fff8ec; }
+    .card.active{ background:#fff4de; border-left:5px solid #ba9444; }
+    .card.visited{ background:#f8f4ea; }
+    .card.today{ box-shadow: inset 0 0 0 2px #c7a45a; }
+    .card.follow-today{ background:#fff3e3; box-shadow: inset 0 0 0 2px #d7a24a; }
+    .card.follow-overdue{ background:#fff0e8; box-shadow: inset 0 0 0 3px #b77b3d; }
 
     .topline{
       display:flex;
@@ -180,21 +168,29 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      background:#2146d0;
-      color:#fff;
+      background:linear-gradient(135deg,#ba9444,#e4c16e);
+      color:#fffefb;
       font-weight:700;
       flex-shrink:0;
+      box-shadow:0 3px 8px rgba(158,120,42,0.20);
     }
 
     .name{
       font-weight:700;
       line-height:1.5;
+      margin-bottom:2px;
+      color:#3a2d18;
+    }
+
+    .kana{
+      font-size:12px;
+      color:#8a7450;
       margin-bottom:6px;
     }
 
     .meta{
       font-size:13px;
-      color:#536076;
+      color:#6a5838;
       line-height:1.7;
       margin-top:6px;
     }
@@ -202,7 +198,7 @@
     .distance{
       margin-top:8px;
       font-size:13px;
-      color:#2146d0;
+      color:#9b752d;
       font-weight:700;
     }
 
@@ -217,19 +213,20 @@
       font-size:12px;
       padding:4px 8px;
       border-radius:999px;
-      background:#eef3ff;
-      color:#2146d0;
+      background:#fbf3df;
+      color:#8b6a2a;
+      border:1px solid #ead7a9;
     }
 
-    .badge.status-called{ background:#e8f0ff; color:#1f5ed8; }
-    .badge.status-absent{ background:#fff3e8; color:#c46b00; }
-    .badge.status-revisit{ background:#f6ebff; color:#7a34c2; }
-    .badge.status-hot{ background:#e9f9ef; color:#138548; }
-    .badge.status-contract{ background:#eaf7ff; color:#0070a8; }
-    .badge.today-badge{ background:#f4eaff; color:#7a34c2; }
-    .badge.done-badge{ background:#e8f6e8; color:#208340; }
-    .badge.follow-badge{ background:#ffdede; color:#c51616; font-weight:700; }
-    .badge.overdue-badge{ background:#c51616; color:#fff; font-weight:700; }
+    .badge.called{ background:#f7eed9; color:#9a7428; }
+    .badge.absent{ background:#fff0db; color:#b16c1e; }
+    .badge.revisit{ background:#f5ead7; color:#8d6b31; }
+    .badge.hot{ background:#eef2e5; color:#6a6d28; }
+    .badge.contract{ background:#edf3eb; color:#52703d; }
+    .badge.done{ background:#eef3e8; color:#56703d; }
+    .badge.todaybadge{ background:#f9efd8; color:#a47a28; }
+    .badge.followbadge{ background:#fff0dd; color:#b2702c; font-weight:700; }
+    .badge.overduebadge{ background:#b9833d; color:#fffdf8; font-weight:700; }
 
     .action-row{
       display:flex;
@@ -243,15 +240,14 @@
       padding:8px 10px;
       font-size:12px;
       border-radius:10px;
-      background:#4f7cff;
+      background:linear-gradient(135deg,#b7903f,#d9b867);
     }
 
-    .small-btn.gray{ background:#7d8aa5; }
-    .small-btn.orange{ background:#e59100; }
-    .small-btn.purple{ background:#8b5cf6; }
-    .small-btn.green{ background:#16a34a; }
-    .small-btn.teal{ background:#0f9fb8; }
-    .small-btn.pink{ background:#d946ef; }
+    .small-btn.green{ background:linear-gradient(135deg,#8f7741,#b89a5b); }
+    .small-btn.orange{ background:linear-gradient(135deg,#c08a39,#dbab57); }
+    .small-btn.gray{ background:linear-gradient(135deg,#8f8060,#b9a57d); }
+    .small-btn.purple{ background:linear-gradient(135deg,#9a8454,#c0a56a); }
+    .small-btn.teal{ background:linear-gradient(135deg,#7f8a5a,#aab274); }
 
     .visit-check{
       display:flex;
@@ -259,7 +255,7 @@
       gap:6px;
       font-size:13px;
       font-weight:700;
-      color:#2c4b85;
+      color:#6b5325;
     }
 
     .date-grid{
@@ -272,7 +268,7 @@
     .date-box label{
       display:block;
       font-size:12px;
-      color:#5b6472;
+      color:#7a6540;
       margin-bottom:4px;
       font-weight:700;
     }
@@ -286,98 +282,86 @@
 
     .memo-box{
       width:100%;
-      min-height:64px;
+      min-height:60px;
       margin-top:10px;
       resize:vertical;
       font-size:13px;
       line-height:1.5;
+      background:#fffdf8;
     }
 
     #map{
       width:100%;
       height:78vh;
       min-height:520px;
-      background:#d8dde8;
+      background:#efe5cf;
     }
 
-    .report-area{
+    .subgrid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
       margin-top:14px;
-      background:#fff;
-      border-radius:18px;
-      box-shadow:0 8px 22px rgba(0,0,0,0.08);
-      overflow:hidden;
     }
 
-    .report-body{
-      padding:14px;
-    }
-
-    #dailyReport{
-      width:100%;
-      min-height:300px;
-      resize:vertical;
-      font-size:14px;
-      line-height:1.7;
-    }
-
-    .footer-note{
-      margin-top:12px;
+    .code-box{
+      margin-top:10px;
+      background:#fffaf0;
+      border:1px solid #ead7a9;
+      border-radius:12px;
+      padding:12px;
       font-size:12px;
-      color:#5b6472;
-      line-height:1.8;
-      background:#fff;
-      padding:12px 14px;
-      border-radius:14px;
-      box-shadow:0 8px 22px rgba(0,0,0,0.06);
+      line-height:1.7;
+      white-space:pre-wrap;
+      word-break:break-word;
+      color:#5f4b28;
+    }
+
+    .big-text{
+      width:100%;
+      min-height:240px;
+      resize:vertical;
+      font-size:13px;
+      line-height:1.6;
     }
 
     a.tel-link{
-      color:#2146d0;
+      color:#9a7428;
       text-decoration:none;
       font-weight:700;
     }
 
     a.route-link{
       display:inline-block;
-      margin-top:8px;
-      color:#0b57d0;
+      color:#a07827;
       text-decoration:none;
       font-size:13px;
       font-weight:700;
     }
 
-    @media (max-width: 1100px){
-      .layout{
-        grid-template-columns:1fr;
-      }
-      .list{
-        height:420px;
-      }
-      #map{
-        height:58vh;
-        min-height:380px;
-      }
-      .date-grid{
-        grid-template-columns:1fr;
-      }
+    @media (max-width: 1150px){
+      .layout{ grid-template-columns:1fr; }
+      .list{ height:430px; }
+      #map{ height:58vh; min-height:380px; }
+      .subgrid{ grid-template-columns:1fr; }
+      .date-grid{ grid-template-columns:1fr; }
     }
   </style>
 </head>
 <body>
-  <header>営業アプリ｜完全版</header>
+  <header>営業アプリ｜大阪市全区 Premium</header>
 
   <div class="wrap">
     <div class="toolbar">
       <div class="row">
         <select id="wardFilter">
           <option value="all">全区</option>
-          <option value="天王寺区">天王寺区</option>
-          <option value="阿倍野区">阿倍野区</option>
         </select>
 
         <select id="typeFilter">
           <option value="all">全種別</option>
           <option value="地域包括支援センター">地域包括支援センター</option>
+          <option value="総合相談窓口（ブランチ）">総合相談窓口（ブランチ）</option>
           <option value="居宅介護支援事業所">居宅介護支援事業所</option>
         </select>
 
@@ -405,21 +389,20 @@
           <option value="unset">日付未設定のみ</option>
         </select>
 
-        <input id="keyword" type="text" placeholder="事業所名・住所で検索" />
-        <input id="placeSearch" type="text" placeholder="天王寺駅などを検索" />
+        <input id="keyword" type="text" placeholder="事業所名・かな・住所で検索" />
+        <input id="placeSearch" type="text" placeholder="梅田駅・天王寺駅などを検索" />
 
         <button onclick="applyFilters()">絞り込み</button>
-        <button onclick="sortFollowPriority()">フォロー優先順</button>
         <button onclick="resetFilters()">リセット</button>
         <button onclick="getCurrentLocation()">現在地取得</button>
         <button onclick="searchPlaceAndMove()">場所検索</button>
-        <button onclick="sortByWalkingOrder()">徒歩順</button>
-        <button onclick="sortTodayByWalkingOrder()">今日予定を徒歩順</button>
+        <button onclick="sortByWalkingOrder()">近い順</button>
+        <button onclick="sortTodayByWalkingOrder()">今日予定を近い順</button>
+        <button class="purple-btn" onclick="sortFollowPriority()">フォロー優先</button>
         <button onclick="jumpToNextUnvisited()">次の未訪問へ</button>
-        <button class="danger-btn" onclick="generateDailyReport()">日報作成</button>
+        <button class="red-btn" onclick="generateDailyReport()">日報作成</button>
         <button onclick="copyDailyReport()">日報コピー</button>
         <button onclick="exportSalesData()">CSV出力</button>
-        <button onclick="clearVisitData()">記録消去</button>
       </div>
 
       <div id="statusBox" class="status-box">現在地はまだ取得していません。</div>
@@ -429,8 +412,8 @@
         <div class="chip" id="todayCount">今日予定: 0</div>
         <div class="chip" id="visitedCount">訪問済み: 0</div>
         <div class="chip" id="remainingCount">未訪問: 0</div>
+        <div class="chip" id="calledCount">電話した: 0</div>
         <div class="chip" id="hotCount">見込みあり: 0</div>
-        <div class="chip" id="contractCount">契約候補: 0</div>
         <div class="chip orange" id="followTodayCount">今日フォロー: 0</div>
         <div class="chip red" id="overdueCount">期限超過: 0</div>
       </div>
@@ -448,46 +431,126 @@
       </div>
     </div>
 
-    <div class="report-area">
-      <div class="panel-title">本日の営業日報</div>
-      <div class="report-body">
-        <textarea id="dailyReport" placeholder="「日報作成」を押すとここに本日の営業日報が自動で入ります。"></textarea>
+    <div class="subgrid">
+      <div class="box">
+        <div class="panel-title" style="margin:-12px -12px 0 -12px; border-radius:16px 16px 0 0;">居宅をCSVで一括追加</div>
+        <div style="margin-top:12px; font-size:13px; line-height:1.7;">
+          CSVの列順は<br>
+          <b>区名,種別,事業所名,事業所名かな,住所,電話,緯度,経度</b><br>
+          です。種別は「居宅介護支援事業所」で入れてください。
+        </div>
+        <textarea id="csvInput" class="big-text" placeholder="例:
+区名,種別,事業所名,事業所名かな,住所,電話,緯度,経度
+北区,居宅介護支援事業所,みどりケアプランセンター,みどりけあぷらんせんたー,大阪市北区芝田1-1-1,06-0000-1111,34.705,135.498"></textarea>
+        <div class="row" style="margin-top:10px;">
+          <button class="green-btn" onclick="importCSV()">CSV追加</button>
+          <button class="orange-btn" onclick="loadCSVExample()">例を入れる</button>
+        </div>
+      </div>
+
+      <div class="box">
+        <div class="panel-title" style="margin:-12px -12px 0 -12px; border-radius:16px 16px 0 0;">本日の営業日報</div>
+        <textarea id="dailyReport" class="big-text" style="margin-top:12px;" placeholder="日報作成を押すとここに入ります。"></textarea>
       </div>
     </div>
 
-    <div class="footer-note">
-      電話番号タップで自動的に「電話した」へ更新します。<br>
-      今日フォロー予定は赤系、期限超過は濃い赤で強調されます。<br>
-      今日の訪問先、日報、CSV出力までこの1本で使えます。
+    <div class="box">
+      <div class="panel-title" style="margin:-12px -12px 0 -12px; border-radius:16px 16px 0 0;">1件ずつ追加したいとき</div>
+      <div class="row" style="margin-top:12px;">
+        <input id="newWard" placeholder="区名">
+        <select id="newType">
+          <option value="地域包括支援センター">地域包括支援センター</option>
+          <option value="総合相談窓口（ブランチ）">総合相談窓口（ブランチ）</option>
+          <option value="居宅介護支援事業所">居宅介護支援事業所</option>
+        </select>
+        <input id="newName" placeholder="事業所名">
+        <input id="newKana" placeholder="事業所名かな">
+        <input id="newPhone" placeholder="電話番号">
+        <input id="newAddress" placeholder="住所">
+        <input id="newLat" placeholder="緯度">
+        <input id="newLng" placeholder="経度">
+        <button class="green-btn" onclick="addOfficeFromForm()">追加</button>
+      </div>
+      <div id="addSnippet" class="code-box">必要なら、ここに追加用コードも出せます。</div>
     </div>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     const offices = [
-      { id:"tennoji-houkatsu", name:"天王寺区地域包括支援センター", ward:"天王寺区", type:"地域包括支援センター", address:"大阪市天王寺区六万体町5-26", phone:"06-6774-3386", lat:34.6589, lng:135.5166 },
-      { id:"abeno-hokubu-houkatsu", name:"阿倍野区北部地域包括支援センター", ward:"阿倍野区", type:"地域包括支援センター", address:"大阪市阿倍野区阿倍野筋3-10-1 あべのベルタ106", phone:"06-6760-4018", lat:34.6456, lng:135.5109 },
-      { id:"abeno-chubu-houkatsu", name:"阿倍野区中部地域包括支援センター", ward:"阿倍野区", type:"地域包括支援センター", address:"大阪市阿倍野区阪南町1-57-2 オルセ阿倍野1階", phone:"06-6629-8686", lat:34.6356, lng:135.5159 },
-      { id:"abeno-houkatsu", name:"阿倍野区地域包括支援センター", ward:"阿倍野区", type:"地域包括支援センター", address:"大阪市阿倍野区帝塚山1-3-8", phone:"06-6628-1400", lat:34.6258, lng:135.5015 },
-      { id:"ueroku-care", name:"うえろくケアプランセンター", ward:"天王寺区", type:"居宅介護支援事業所", address:"大阪市天王寺区上本町8丁目4-11 KIMURAビル3F", phone:"06-6772-6223", lat:34.6624, lng:135.5208 },
-      { id:"shitennoji-care", name:"四天王寺ケアプランセンター", ward:"天王寺区", type:"居宅介護支援事業所", address:"大阪市天王寺区玉造元町1-29", phone:"06-6763-4115", lat:34.6735, lng:135.5310 },
-      { id:"yuhigaoka-care", name:"夕陽ヶ丘ケアサービス居宅介護支援事業所", ward:"天王寺区", type:"居宅介護支援事業所", address:"大阪市天王寺区勝山2丁目8-23", phone:"06-6771-3015", lat:34.6538, lng:135.5278 },
-      { id:"nakayoshi-tennoji", name:"介護支援センターなかよし天王寺", ward:"天王寺区", type:"居宅介護支援事業所", address:"大阪市天王寺区烏ヶ辻1-8-9 烏ヶ辻コーポ103", phone:"06-4302-5500", lat:34.6555, lng:135.5308 },
-      { id:"care-reach", name:"居宅介護支援事業所ケアリーチ", ward:"天王寺区", type:"居宅介護支援事業所", address:"大阪市天王寺区上汐3丁目2-16 アリビオ上本町604号室", phone:"06-6777-9433", lat:34.6621, lng:135.5180 },
-      { id:"care21-abeno", name:"ケア21阿倍野", ward:"阿倍野区", type:"居宅介護支援事業所", address:"大阪市阿倍野区昭和町1-8-26 パレロイヤルビル201号", phone:"06-6626-2055", lat:34.6377, lng:135.5184 },
-      { id:"abeno-ishikai", name:"阿倍野区医師会ケアセンター", ward:"阿倍野区", type:"居宅介護支援事業所", address:"大阪市阿倍野区阿倍野筋5-8-26 大阪市阿倍野区医師会館3F", phone:"06-6624-1665", lat:34.6387, lng:135.5068 },
-      { id:"loopcare", name:"居宅介護支援事業所 るぅぷけぁ", ward:"阿倍野区", type:"居宅介護支援事業所", address:"大阪市阿倍野区阪南町2-1-11", phone:"06-6654-3012", lat:34.6339, lng:135.5161 },
-      { id:"hanamizuki", name:"介護支援センターはなみずき", ward:"阿倍野区", type:"居宅介護支援事業所", address:"大阪市阿倍野区王子町3丁目8-4", phone:"06-6654-3277", lat:34.6276, lng:135.5038 },
-      { id:"shien-club", name:"居宅支援倶楽部", ward:"阿倍野区", type:"居宅介護支援事業所", address:"大阪市阿倍野区松虫通3-1-18 パインヒルズ105", phone:"06-6615-9160", lat:34.6309, lng:135.5060 }
+      { id:"kita", ward:"北区", type:"地域包括支援センター", name:"北区地域包括支援センター", kana:"きたくちいきほうかつしえんせんたー", address:"大阪市北区神山町15-11", phone:"06-6313-5568", lat:34.7054, lng:135.5069 },
+      { id:"kita-oyodo", ward:"北区", type:"地域包括支援センター", name:"北区大淀地域包括支援センター", kana:"きたくおおよどちいきほうかつしえんせんたー", address:"大阪市北区長柄中1-1-21", phone:"06-6354-1165", lat:34.7118, lng:135.5122 },
+      { id:"branch-kita-umeda", ward:"北区", type:"総合相談窓口（ブランチ）", name:"梅田東ブランチ", kana:"うめだひがしぶらんち", address:"大阪市北区芝田2-10-39", phone:"06-6372-0804", lat:34.7079, lng:135.4946 },
+      { id:"branch-kita-toyosaki", ward:"北区", type:"総合相談窓口（ブランチ）", name:"豊崎ブランチ", kana:"とよさきぶらんち", address:"大阪市北区本庄西2-6-15", phone:"06-6371-6233", lat:34.7141, lng:135.4994 },
+
+      { id:"miyakojima", ward:"都島区", type:"地域包括支援センター", name:"都島区地域包括支援センター", kana:"みやこじまくちいきほうかつしえんせんたー", address:"大阪市都島区都島本通3-12-31", phone:"06-6929-9500", lat:34.7046, lng:135.5288 },
+      { id:"miyakojima-hokubu", ward:"都島区", type:"地域包括支援センター", name:"都島区北部地域包括支援センター", kana:"みやこじまくほくぶちいきほうかつしえんせんたー", address:"大阪市都島区大東町2-2-18", phone:"06-6926-3800", lat:34.7227, lng:135.5305 },
+      { id:"branch-miyakojima-nakano", ward:"都島区", type:"総合相談窓口（ブランチ）", name:"中野ブランチ", kana:"なかのぶらんち", address:"大阪市都島区中野町5-10-70", phone:"06-6922-3550", lat:34.7029, lng:135.5273 },
+
+      { id:"fukushima", ward:"福島区", type:"地域包括支援センター", name:"福島区地域包括支援センター", kana:"ふくしまくちいきほうかつしえんせんたー", address:"大阪市福島区海老江6-2-22", phone:"06-6454-6330", lat:34.6950, lng:135.4683 },
+      { id:"branch-fukushima-shimofukushima", ward:"福島区", type:"総合相談窓口（ブランチ）", name:"下福島ブランチ", kana:"しもふくしまぶらんち", address:"大阪市福島区福島4-6-24", phone:"06-4798-0270", lat:34.6934, lng:135.4807 },
+      { id:"branch-fukushima-noda", ward:"福島区", type:"総合相談窓口（ブランチ）", name:"野田ブランチ", kana:"のだぶらんち", address:"大阪市福島区吉野5-6-11", phone:"06-6464-0105", lat:34.6846, lng:135.4704 },
+
+      { id:"konohana", ward:"此花区", type:"地域包括支援センター", name:"此花区地域包括支援センター", kana:"このはなくちいきほうかつしえんせんたー", address:"大阪市此花区伝法3-2-27", phone:"06-6462-1225", lat:34.6828, lng:135.4485 },
+      { id:"konohana-nanseibu", ward:"此花区", type:"地域包括支援センター", name:"此花区南西部地域包括支援センター", kana:"このはなくなんせいぶちいきほうかつしえんせんたー", address:"大阪市此花区春日出中1-22-13", phone:"06-6462-9301", lat:34.6647, lng:135.4542 },
+      { id:"branch-konohana-kasugade", ward:"此花区", type:"総合相談窓口（ブランチ）", name:"春日出ブランチ", kana:"かすがでぶらんち", address:"大阪市此花区西九条1-1-2", phone:"06-6467-2933", lat:34.6782, lng:135.4659 },
+
+      { id:"chuo", ward:"中央区", type:"地域包括支援センター", name:"中央区地域包括支援センター", kana:"ちゅうおうくちいきほうかつしえんせんたー", address:"大阪市中央区上本町西2-5-25", phone:"06-6763-8139", lat:34.6730, lng:135.5203 },
+      { id:"chuo-hokubu", ward:"中央区", type:"地域包括支援センター", name:"中央区北部地域包括支援センター", kana:"ちゅうおうくほくぶちいきほうかつしえんせんたー", address:"大阪市中央区農人橋3-1-3", phone:"06-6944-2116", lat:34.6809, lng:135.5125 },
+
+      { id:"nishi", ward:"西区", type:"地域包括支援センター", name:"西区地域包括支援センター", kana:"にしくちいきほうかつしえんせんたー", address:"大阪市西区新町4-5-14", phone:"06-6539-8075", lat:34.6767, lng:135.4893 },
+      { id:"branch-nishi-hananoi", ward:"西区", type:"総合相談窓口（ブランチ）", name:"花乃井ブランチ", kana:"はなのいぶらんち", address:"大阪市西区江之子島1-8-44", phone:"06-6225-2662", lat:34.6818, lng:135.4851 },
+
+      { id:"minato", ward:"港区", type:"地域包括支援センター", name:"港区地域包括支援センター", kana:"みなとくちいきほうかつしえんせんたー", address:"大阪市港区弁天2-15-1", phone:"06-6575-1212", lat:34.6698, lng:135.4617 },
+      { id:"minato-nanbu", ward:"港区", type:"地域包括支援センター", name:"港区南部地域包括支援センター", kana:"みなとくなんぶちいきほうかつしえんせんたー", address:"大阪市港区池島1-1-18", phone:"06-6536-8162", lat:34.6548, lng:135.4507 },
+
+      { id:"taisho", ward:"大正区", type:"地域包括支援センター", name:"大正区地域包括支援センター", kana:"たいしょうくちいきほうかつしえんせんたー", address:"大阪市大正区小林西1-14-3", phone:"06-6555-0693", lat:34.6495, lng:135.4728 },
+      { id:"taisho-hokubu", ward:"大正区", type:"地域包括支援センター", name:"大正区北部地域包括支援センター", kana:"たいしょうくほくぶちいきほうかつしえんせんたー", address:"大阪市大正区北村3-5-10", phone:"06-6552-4440", lat:34.6557, lng:135.4694 },
+
+      { id:"tennoji", ward:"天王寺区", type:"地域包括支援センター", name:"天王寺区地域包括支援センター", kana:"てんのうじくちいきほうかつしえんせんたー", address:"大阪市天王寺区六万体町5-26", phone:"06-6774-3386", lat:34.6589, lng:135.5166 },
+      { id:"branch-tennoji-yuhigaoka", ward:"天王寺区", type:"総合相談窓口（ブランチ）", name:"夕陽丘ブランチ", kana:"ゆうひがおかぶらんち", address:"大阪市天王寺区北山町9-6", phone:"06-6773-1811", lat:34.6536, lng:135.5221 },
+
+      { id:"naniwa", ward:"浪速区", type:"地域包括支援センター", name:"浪速区地域包括支援センター", kana:"なにわくちいきほうかつしえんせんたー", address:"大阪市浪速区難波中3-8-8", phone:"06-6636-6029", lat:34.6614, lng:135.4964 },
+      { id:"branch-naniwa-nihonbashi", ward:"浪速区", type:"総合相談窓口（ブランチ）", name:"日本橋ブランチ", kana:"にっぽんばしぶらんち", address:"大阪市浪速区恵美須東2-1-4", phone:"06-6632-2340", lat:34.6532, lng:135.5065 },
+
+      { id:"nishiyodogawa", ward:"西淀川区", type:"地域包括支援センター", name:"西淀川区地域包括支援センター", kana:"にしよどがわくちいきほうかつしえんせんたー", address:"大阪市西淀川区千舟2-7-7", phone:"06-6478-2943", lat:34.7117, lng:135.4554 },
+      { id:"nishiyodogawa-nanseibu", ward:"西淀川区", type:"地域包括支援センター", name:"西淀川区南西部地域包括支援センター", kana:"にしよどがわくなんせいぶちいきほうかつしえんせんたー", address:"大阪市西淀川区福町2-4-16", phone:"06-6476-3550", lat:34.6922, lng:135.4312 },
+
+      { id:"yodogawa", ward:"淀川区", type:"地域包括支援センター", name:"淀川区地域包括支援センター", kana:"よどがわくちいきほうかつしえんせんたー", address:"大阪市淀川区三国本町2-14-3", phone:"06-6394-2914", lat:34.7360, lng:135.4868 },
+      { id:"yodogawa-tobu", ward:"淀川区", type:"地域包括支援センター", name:"淀川区東部地域包括支援センター", kana:"よどがわくとうぶちいきほうかつしえんせんたー", address:"大阪市淀川区西宮原1-6-45", phone:"06-6350-7310", lat:34.7368, lng:135.4927 },
+
+      { id:"higashiyodogawa", ward:"東淀川区", type:"地域包括支援センター", name:"東淀川区地域包括支援センター", kana:"ひがしよどがわくちいきほうかつしえんせんたー", address:"大阪市東淀川区菅原4-4-37", phone:"06-6370-7190", lat:34.7439, lng:135.5297 },
+      { id:"higashiyodogawa-hokubu", ward:"東淀川区", type:"地域包括支援センター", name:"東淀川区北部地域包括支援センター", kana:"ひがしよどがわくほくぶちいきほうかつしえんせんたー", address:"大阪市東淀川区井高野2-1-59", phone:"06-6349-5001", lat:34.7657, lng:135.5440 },
+
+      { id:"higashinari-nanbu", ward:"東成区", type:"地域包括支援センター", name:"東成区南部地域包括支援センター", kana:"ひがしなりくなんぶちいきほうかつしえんせんたー", address:"大阪市東成区大今里南3-11-2", phone:"06-6977-7032", lat:34.6657, lng:135.5480 },
+      { id:"higashinari-hokubu", ward:"東成区", type:"地域包括支援センター", name:"東成区北部地域包括支援センター", kana:"ひがしなりくほくぶちいきほうかつしえんせんたー", address:"大阪市東成区中道2-4-15", phone:"06-6971-9700", lat:34.6827, lng:135.5414 },
+
+      { id:"ikuno", ward:"生野区", type:"地域包括支援センター", name:"生野区地域包括支援センター", kana:"いくのくちいきほうかつしえんせんたー", address:"大阪市生野区勝山北3-13-20", phone:"06-6712-3103", lat:34.6529, lng:135.5376 },
+      { id:"ikuno-higashi", ward:"生野区", type:"地域包括支援センター", name:"東生野地域包括支援センター", kana:"ひがしいくのちいきほうかつしえんせんたー", address:"大阪市生野区小路3-17-10", phone:"06-6758-8816", lat:34.6612, lng:135.5600 },
+
+      { id:"asahi", ward:"旭区", type:"地域包括支援センター", name:"旭区地域包括支援センター", kana:"あさひくちいきほうかつしえんせんたー", address:"大阪市旭区高殿6-16-1", phone:"06-6957-2200", lat:34.7250, lng:135.5448 },
+      { id:"asahi-seibu", ward:"旭区", type:"地域包括支援センター", name:"旭区西部地域包括支援センター", kana:"あさひくせいぶちいきほうかつしえんせんたー", address:"大阪市旭区中宮2-15-7", phone:"06-6958-5030", lat:34.7211, lng:135.5366 },
+
+      { id:"joto", ward:"城東区", type:"地域包括支援センター", name:"城東区地域包括支援センター", kana:"じょうとうくちいきほうかつしえんせんたー", address:"大阪市城東区中央2-11-16", phone:"06-6936-1133", lat:34.7008, lng:135.5442 },
+
+      { id:"tsurumi", ward:"鶴見区", type:"地域包括支援センター", name:"鶴見区地域包括支援センター", kana:"つるみくちいきほうかつしえんせんたー", address:"大阪市鶴見区諸口5-浜6-12", phone:"06-6913-7512", lat:34.7056, lng:135.5825 },
+
+      { id:"abeno", ward:"阿倍野区", type:"地域包括支援センター", name:"阿倍野区地域包括支援センター", kana:"あべのくちいきほうかつしえんせんたー", address:"大阪市阿倍野区帝塚山1-3-8", phone:"06-6628-1400", lat:34.6258, lng:135.5015 },
+      { id:"abeno-hokubu", ward:"阿倍野区", type:"地域包括支援センター", name:"阿倍野区北部地域包括支援センター", kana:"あべのくほくぶちいきほうかつしえんせんたー", address:"大阪市阿倍野区阿倍野筋3-10-1", phone:"06-6760-4018", lat:34.6456, lng:135.5109 },
+
+      { id:"suminoe", ward:"住之江区", type:"地域包括支援センター", name:"住之江区地域包括支援センター", kana:"すみのえくちいきほうかつしえんせんたー", address:"大阪市住之江区御崎4-6-10", phone:"06-6686-2235", lat:34.6152, lng:135.4831 },
+
+      { id:"sumiyoshi", ward:"住吉区", type:"地域包括支援センター", name:"住吉区地域包括支援センター", kana:"すみよしくちいきほうかつしえんせんたー", address:"大阪市住吉区浅香1-8-47", phone:"06-6692-8803", lat:34.6164, lng:135.5099 },
+
+      { id:"higashisumiyoshi", ward:"東住吉区", type:"地域包括支援センター", name:"東住吉区地域包括支援センター", kana:"ひがしすみよしくちいきほうかつしえんせんたー", address:"大阪市東住吉区田辺2-10-18", phone:"06-6622-0055", lat:34.6219, lng:135.5280 },
+
+      { id:"hirano", ward:"平野区", type:"地域包括支援センター", name:"平野区地域包括支援センター", kana:"ひらのくちいきほうかつしえんせんたー", address:"大阪市平野区平野東2-1-30", phone:"06-6795-1666", lat:34.6208, lng:135.5521 },
+
+      { id:"nishinari", ward:"西成区", type:"地域包括支援センター", name:"西成区地域包括支援センター", kana:"にしなりくちいきほうかつしえんせんたー", address:"大阪市西成区岸里1-5-20", phone:"06-6656-0080", lat:34.6386, lng:135.4941 }
     ];
 
-    const map = L.map("map").setView([34.646, 135.519], 13);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap contributors"
-    }).addTo(map);
-
+    const wardSelect = document.getElementById("wardFilter");
     const listEl = document.getElementById("list");
-    const wardFilter = document.getElementById("wardFilter");
     const typeFilter = document.getElementById("typeFilter");
     const salesStatusFilter = document.getElementById("salesStatusFilter");
     const todayFilter = document.getElementById("todayFilter");
@@ -495,16 +558,23 @@
     const keywordInput = document.getElementById("keyword");
     const placeSearchInput = document.getElementById("placeSearch");
     const statusBox = document.getElementById("statusBox");
+    const csvInput = document.getElementById("csvInput");
     const dailyReportEl = document.getElementById("dailyReport");
+    const addSnippetEl = document.getElementById("addSnippet");
 
     const totalCountEl = document.getElementById("totalCount");
     const todayCountEl = document.getElementById("todayCount");
     const visitedCountEl = document.getElementById("visitedCount");
     const remainingCountEl = document.getElementById("remainingCount");
+    const calledCountEl = document.getElementById("calledCount");
     const hotCountEl = document.getElementById("hotCount");
-    const contractCountEl = document.getElementById("contractCount");
     const followTodayCountEl = document.getElementById("followTodayCount");
     const overdueCountEl = document.getElementById("overdueCount");
+
+    const map = L.map("map").setView([34.6937, 135.5023], 11);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map);
 
     let markers = [];
     let visibleMarkers = [];
@@ -514,44 +584,53 @@
     let routeLine = null;
     let currentRenderedData = [...offices];
 
-    function todayStr(){
-      const d = new Date();
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      return `${y}-${m}-${day}`;
+    function refreshWardOptions(){
+      const currentValue = wardSelect.value || "all";
+      const wards = [...new Set(offices.map(o => o.ward))].sort((a,b)=>a.localeCompare(b,"ja"));
+      wardSelect.innerHTML = '<option value="all">全区</option>';
+      wards.forEach(ward => {
+        const option = document.createElement("option");
+        option.value = ward;
+        option.textContent = ward;
+        wardSelect.appendChild(option);
+      });
+      if([...wardSelect.options].some(o => o.value === currentValue)){
+        wardSelect.value = currentValue;
+      }
+    }
+
+    refreshWardOptions();
+
+    function safeId(text){
+      return text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\u3040-\u30ff\u3400-\u9fff-]/g, "").slice(0, 60) || ("office-" + Date.now());
     }
 
     function nowTimeStr(){
       const d = new Date();
-      const h = String(d.getHours()).padStart(2, "0");
-      const m = String(d.getMinutes()).padStart(2, "0");
-      return `${h}:${m}`;
+      return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+    }
+
+    function todayStr(){
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
     }
 
     function getVisitState(id){ return localStorage.getItem("visit_" + id) === "1"; }
     function setVisitState(id, value){ localStorage.setItem("visit_" + id, value ? "1" : "0"); }
-
     function getMemo(id){ return localStorage.getItem("memo_" + id) || ""; }
     function setMemo(id, text){ localStorage.setItem("memo_" + id, text); }
-
-    function getSalesStatus(id){ return localStorage.getItem("sales_status_" + id) || "未対応"; }
-    function setSalesStatus(id, value){ localStorage.setItem("sales_status_" + id, value); }
-
     function isTodayTarget(id){ return localStorage.getItem("today_target_" + id) === "1"; }
     function setTodayTarget(id, value){ localStorage.setItem("today_target_" + id, value ? "1" : "0"); }
-
-    function getVisitDate(id){ return localStorage.getItem("visit_date_" + id) || ""; }
-    function setVisitDate(id, value){ localStorage.setItem("visit_date_" + id, value); }
-
-    function getNextVisitDate(id){ return localStorage.getItem("next_visit_date_" + id) || ""; }
-    function setNextVisitDate(id, value){ localStorage.setItem("next_visit_date_" + id, value); }
-
-    function getFollowDate(id){ return localStorage.getItem("follow_date_" + id) || ""; }
-    function setFollowDate(id, value){ localStorage.setItem("follow_date_" + id, value); }
-
+    function getSalesStatus(id){ return localStorage.getItem("sales_status_" + id) || "未対応"; }
+    function setSalesStatus(id, value){ localStorage.setItem("sales_status_" + id, value); }
     function getCallTime(id){ return localStorage.getItem("call_time_" + id) || ""; }
     function setCallTime(id, value){ localStorage.setItem("call_time_" + id, value); }
+    function getVisitDate(id){ return localStorage.getItem("visit_date_" + id) || ""; }
+    function setVisitDate(id, value){ localStorage.setItem("visit_date_" + id, value); }
+    function getNextVisitDate(id){ return localStorage.getItem("next_visit_date_" + id) || ""; }
+    function setNextVisitDate(id, value){ localStorage.setItem("next_visit_date_" + id, value); }
+    function getFollowDate(id){ return localStorage.getItem("follow_date_" + id) || ""; }
+    function setFollowDate(id, value){ localStorage.setItem("follow_date_" + id, value); }
 
     function isFollowToday(id){
       const v = getFollowDate(id);
@@ -563,40 +642,21 @@
       return v !== "" && v < todayStr();
     }
 
-    function statusBadgeClass(status){
-      if(status === "電話した") return "status-called";
-      if(status === "不在") return "status-absent";
-      if(status === "再訪問") return "status-revisit";
-      if(status === "見込みあり") return "status-hot";
-      if(status === "契約候補") return "status-contract";
+    function statusClass(status){
+      if(status === "電話した") return "called";
+      if(status === "不在") return "absent";
+      if(status === "再訪問") return "revisit";
+      if(status === "見込みあり") return "hot";
+      if(status === "契約候補") return "contract";
       return "";
     }
 
-    function markerColor(status, visited, today, followToday, overdue){
-      if(overdue) return "#c51616";
-      if(followToday) return "#ff6b6b";
-      if(status === "契約候補") return "#0f9fb8";
-      if(status === "見込みあり") return "#16a34a";
-      if(status === "再訪問") return "#8b5cf6";
-      if(status === "不在") return "#e59100";
-      if(status === "電話した") return "#4f7cff";
-      if(today) return "#d946ef";
-      if(visited) return "#2aa84a";
-      return "#2146d0";
+    function googleMapsWalkingUrl(address){
+      return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}&travelmode=walking`;
     }
 
-    function followPriorityScore(office){
-      if(isFollowOverdue(office.id)) return 100;
-      if(isFollowToday(office.id)) return 90;
-      if(getSalesStatus(office.id) === "契約候補") return 80;
-      if(getSalesStatus(office.id) === "見込みあり") return 70;
-      if(getSalesStatus(office.id) === "再訪問") return 60;
-      if(isTodayTarget(office.id)) return 50;
-      return 10;
-    }
-
-    function googleMapsDirectionsUrl(destination){
-      return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=walking`;
+    function googleMapsTransitUrl(address){
+      return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}&travelmode=transit`;
     }
 
     function haversine(lat1, lon1, lat2, lon2) {
@@ -605,8 +665,7 @@
       const dLon = (lon2 - lon1) * Math.PI / 180;
       const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * Math.PI / 180) *
-        Math.cos(lat2 * Math.PI / 180) *
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
         Math.sin(dLon / 2) * Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       return R * c;
@@ -625,13 +684,23 @@
       statusBox.innerHTML = text;
     }
 
+    function followPriorityScore(office){
+      if(isFollowOverdue(office.id)) return 100;
+      if(isFollowToday(office.id)) return 90;
+      if(getSalesStatus(office.id) === "契約候補") return 80;
+      if(getSalesStatus(office.id) === "見込みあり") return 70;
+      if(getSalesStatus(office.id) === "再訪問") return 60;
+      if(isTodayTarget(office.id)) return 50;
+      return 10;
+    }
+
     function updateSummary(data){
       const total = data.length;
       const today = data.filter(o => isTodayTarget(o.id)).length;
       const visited = data.filter(o => getVisitState(o.id)).length;
       const remaining = total - visited;
+      const called = data.filter(o => getSalesStatus(o.id) === "電話した").length;
       const hot = data.filter(o => getSalesStatus(o.id) === "見込みあり").length;
-      const contract = data.filter(o => getSalesStatus(o.id) === "契約候補").length;
       const followToday = data.filter(o => isFollowToday(o.id)).length;
       const overdue = data.filter(o => isFollowOverdue(o.id)).length;
 
@@ -639,14 +708,14 @@
       todayCountEl.textContent = `今日予定: ${today}`;
       visitedCountEl.textContent = `訪問済み: ${visited}`;
       remainingCountEl.textContent = `未訪問: ${remaining}`;
+      calledCountEl.textContent = `電話した: ${called}`;
       hotCountEl.textContent = `見込みあり: ${hot}`;
-      contractCountEl.textContent = `契約候補: ${contract}`;
       followTodayCountEl.textContent = `今日フォロー: ${followToday}`;
       overdueCountEl.textContent = `期限超過: ${overdue}`;
     }
 
     function getFilteredData(){
-      const ward = wardFilter.value;
+      const ward = wardSelect.value;
       const type = typeFilter.value;
       const salesStatus = salesStatusFilter.value;
       const todayMode = todayFilter.value;
@@ -670,8 +739,9 @@
 
         const keywordOk =
           keyword === "" ||
-          office.name.toLowerCase().includes(keyword) ||
-          office.address.toLowerCase().includes(keyword);
+          (office.name && office.name.toLowerCase().includes(keyword)) ||
+          (office.kana && office.kana.toLowerCase().includes(keyword)) ||
+          (office.address && office.address.toLowerCase().includes(keyword));
 
         return wardOk && typeOk && statusOk && todayOk && followOk && keywordOk;
       });
@@ -687,16 +757,34 @@
       }
     }
 
-    function markCalledFromPhoneTap(office){
-      setSalesStatus(office.id, "電話した");
-      if(!getVisitDate(office.id)) setVisitDate(office.id, todayStr());
-      setCallTime(office.id, nowTimeStr());
+    function markerColor(office){
+      const status = getSalesStatus(office.id);
+      const visited = getVisitState(office.id);
+      const today = isTodayTarget(office.id);
+      const followToday = isFollowToday(office.id);
+      const overdue = isFollowOverdue(office.id);
 
-      setTimeout(() => {
-        renderListAndMap(currentRenderedData);
-        updateSummary(currentRenderedData);
-        setStatus(`${office.name} を「電話した」に更新しました。`);
-      }, 300);
+      if(overdue) return "#b9833d";
+      if(followToday) return "#d7a24a";
+      if(status === "契約候補") return "#7f8a5a";
+      if(status === "見込みあり") return "#8f7741";
+      if(status === "再訪問") return "#9a8454";
+      if(status === "不在") return "#c08a39";
+      if(status === "電話した") return "#b7903f";
+      if(today) return "#c7a45a";
+      if(visited) return "#8d9a73";
+      if(office.type === "総合相談窓口（ブランチ）") return "#d3a34f";
+      if(office.type === "居宅介護支援事業所") return "#9da66f";
+      return "#ba9444";
+    }
+
+    function markCalled(office){
+      setSalesStatus(office.id, "電話した");
+      setCallTime(office.id, nowTimeStr());
+      if(!getVisitDate(office.id)) setVisitDate(office.id, todayStr());
+      renderListAndMap(currentRenderedData);
+      updateSummary(currentRenderedData);
+      setStatus(`${office.name} を「電話した」に更新しました。`);
     }
 
     function renderListAndMap(data){
@@ -705,30 +793,28 @@
       clearMarkers();
 
       const linePoints = [];
-      if(currentPosition){
-        linePoints.push([currentPosition.lat, currentPosition.lng]);
-      }
+      if(currentPosition) linePoints.push([currentPosition.lat, currentPosition.lng]);
 
       data.forEach((office, index) => {
         const visited = getVisitState(office.id);
+        const today = isTodayTarget(office.id);
         const memo = getMemo(office.id);
         const salesStatus = getSalesStatus(office.id);
-        const today = isTodayTarget(office.id);
+        const callTime = getCallTime(office.id);
         const visitDate = getVisitDate(office.id);
         const nextVisitDate = getNextVisitDate(office.id);
         const followDate = getFollowDate(office.id);
-        const callTime = getCallTime(office.id);
         const followToday = isFollowToday(office.id);
         const overdue = isFollowOverdue(office.id);
 
-        let cardClass = "card";
-        if(visited) cardClass += " visited";
-        if(today) cardClass += " today";
-        if(followToday) cardClass += " follow-today";
-        if(overdue) cardClass += " follow-overdue";
+        let cls = "card";
+        if(visited) cls += " visited";
+        if(today) cls += " today";
+        if(followToday) cls += " follow-today";
+        if(overdue) cls += " follow-overdue";
 
         const item = document.createElement("div");
-        item.className = cardClass;
+        item.className = cls;
 
         const distanceText = office.distanceFromPrev != null
           ? `前地点から ${formatDistance(office.distanceFromPrev)} / 徒歩約${walkingMinutesFromKm(office.distanceFromPrev)}分`
@@ -740,11 +826,13 @@
           <div class="topline">
             <div style="flex:1;">
               <div class="name">${office.name}</div>
+              ${office.kana ? `<div class="kana">${office.kana}</div>` : ""}
             </div>
             <div class="order-badge">${index + 1}</div>
           </div>
 
           <div class="meta">
+            ${office.ward}<br>
             ${office.address}<br>
             <a class="tel-link auto-call-link" href="tel:${office.phone.replace(/-/g, "")}">${office.phone}</a>
             ${callTime ? `<br>電話時刻: ${callTime}` : ""}
@@ -753,13 +841,12 @@
           <div class="distance">${distanceText}</div>
 
           <div class="badge-row">
-            <span class="badge">${office.ward}</span>
             <span class="badge">${office.type}</span>
-            <span class="badge ${statusBadgeClass(salesStatus)}">${salesStatus}</span>
-            ${today ? '<span class="badge today-badge">今日回る先</span>' : ""}
-            ${visited ? '<span class="badge done-badge">訪問済み</span>' : ""}
-            ${followToday ? '<span class="badge follow-badge">今日フォロー</span>' : ""}
-            ${overdue ? '<span class="badge overdue-badge">期限超過</span>' : ""}
+            <span class="badge ${statusClass(salesStatus)}">${salesStatus}</span>
+            ${today ? '<span class="badge todaybadge">今日回る先</span>' : ""}
+            ${visited ? '<span class="badge done">訪問済み</span>' : ""}
+            ${followToday ? '<span class="badge followbadge">今日フォロー</span>' : ""}
+            ${overdue ? '<span class="badge overduebadge">期限超過</span>' : ""}
           </div>
 
           <div class="action-row">
@@ -774,12 +861,17 @@
           </div>
 
           <div class="action-row">
-            <button class="small-btn gray status-btn" data-status="電話した">電話した</button>
-            <button class="small-btn orange status-btn" data-status="不在">不在</button>
-            <button class="small-btn purple status-btn" data-status="再訪問">再訪問</button>
-            <button class="small-btn green status-btn" data-status="見込みあり">見込みあり</button>
-            <button class="small-btn teal status-btn" data-status="契約候補">契約候補</button>
-            <button class="small-btn pink next-btn">次へ</button>
+            <button class="small-btn" data-status="電話した">電話した</button>
+            <button class="small-btn orange" data-status="不在">不在</button>
+            <button class="small-btn purple" data-status="再訪問">再訪問</button>
+            <button class="small-btn green" data-status="見込みあり">見込みあり</button>
+            <button class="small-btn teal" data-status="契約候補">契約候補</button>
+          </div>
+
+          <div class="action-row">
+            <a class="route-link" href="${googleMapsWalkingUrl(office.address)}" target="_blank" rel="noopener noreferrer">徒歩ルート</a>
+            <a class="route-link" href="${googleMapsTransitUrl(office.address)}" target="_blank" rel="noopener noreferrer">バス・電車ルート</a>
+            <button class="small-btn gray next-btn">次へ</button>
           </div>
 
           <div class="date-grid">
@@ -797,10 +889,6 @@
             </div>
           </div>
 
-          <a class="route-link" href="${googleMapsDirectionsUrl(office.address)}" target="_blank" rel="noopener noreferrer">
-            徒歩ルートをGoogleマップで開く
-          </a>
-
           <textarea class="memo-box" placeholder="営業メモを入力">${memo}</textarea>
         `;
         listEl.appendChild(item);
@@ -810,29 +898,30 @@
           html: `
             <div style="
               width:30px;height:30px;border-radius:999px;
-              background:${markerColor(salesStatus, visited, today, followToday, overdue)};
+              background:${markerColor(office)};
               color:#fff;display:flex;align-items:center;justify-content:center;
               font-weight:700;border:2px solid #fff;
               box-shadow:0 2px 8px rgba(0,0,0,0.25);
             ">${index + 1}</div>
           `,
-          iconSize: [30, 30],
-          iconAnchor: [15, 15]
+          iconSize: [30,30],
+          iconAnchor: [15,15]
         });
 
         const marker = L.marker([office.lat, office.lng], { icon }).addTo(map);
         marker.bindPopup(`
           <b>${index + 1}. ${office.name}</b><br>
+          ${office.kana ? office.kana + "<br>" : ""}
           ${office.ward}<br>
           ${office.type}<br>
           状態: ${salesStatus}<br>
-          電話時刻: ${callTime || "未記録"}<br>
           訪問日: ${visitDate || "未設定"}<br>
           次回訪問日: ${nextVisitDate || "未設定"}<br>
           フォロー予定日: ${followDate || "未設定"}<br>
           ${office.address}<br>
-          <a class="tel-link auto-call-link" href="tel:${office.phone.replace(/-/g, "")}">${office.phone}</a><br>
-          <a href="${googleMapsDirectionsUrl(office.address)}" target="_blank" rel="noopener noreferrer">徒歩ルートを開く</a>
+          <a href="tel:${office.phone.replace(/-/g, "")}">${office.phone}</a><br>
+          <a href="${googleMapsWalkingUrl(office.address)}" target="_blank" rel="noopener noreferrer">徒歩ルート</a><br>
+          <a href="${googleMapsTransitUrl(office.address)}" target="_blank" rel="noopener noreferrer">バス・電車ルート</a>
         `);
 
         markers.push(marker);
@@ -845,71 +934,55 @@
             e.target.classList.contains("today-toggle") ||
             e.target.classList.contains("memo-box") ||
             e.target.classList.contains("next-btn") ||
-            e.target.classList.contains("status-btn") ||
+            e.target.classList.contains("auto-call-link") ||
             e.target.classList.contains("visit-date-input") ||
             e.target.classList.contains("next-visit-date-input") ||
-            e.target.classList.contains("follow-date-input") ||
-            e.target.classList.contains("auto-call-link")
+            e.target.classList.contains("follow-date-input")
           ) return;
 
           document.querySelectorAll(".card").forEach(c => c.classList.remove("active"));
           item.classList.add("active");
           map.setView([office.lat, office.lng], 16);
           marker.openPopup();
-
-          setTimeout(() => {
-            const popupLinks = document.querySelectorAll(".leaflet-popup-content .auto-call-link");
-            popupLinks.forEach(link => {
-              link.addEventListener("click", () => markCalledFromPhoneTap(office), { once: true });
-            });
-          }, 50);
         });
 
         item.querySelector(".visit-toggle").addEventListener("change", (e) => {
-          const checked = e.target.checked;
-          setVisitState(office.id, checked);
-          if(checked && !getVisitDate(office.id)) setVisitDate(office.id, todayStr());
+          setVisitState(office.id, e.target.checked);
+          if(e.target.checked && !getVisitDate(office.id)) setVisitDate(office.id, todayStr());
           renderListAndMap(currentRenderedData);
           updateSummary(currentRenderedData);
-
-          if(checked){
-            setStatus(`${office.name} を訪問済みにしました。`);
-            jumpToNextUnvisited();
-          }else{
-            setStatus(`${office.name} の訪問済みを解除しました。`);
-          }
+          setStatus(`${office.name} の訪問状態を更新しました。`);
+          if(e.target.checked) jumpToNextUnvisited(index + 1);
         });
 
         item.querySelector(".today-toggle").addEventListener("change", (e) => {
-          const checked = e.target.checked;
-          setTodayTarget(office.id, checked);
+          setTodayTarget(office.id, e.target.checked);
           renderListAndMap(currentRenderedData);
           updateSummary(currentRenderedData);
-          setStatus(`${office.name} を${checked ? "今日回る先" : "今日回る先から解除"}にしました。`);
+          setStatus(`${office.name} の今日予定を更新しました。`);
         });
 
-        item.querySelectorAll(".status-btn").forEach(btn => {
+        item.querySelectorAll("[data-status]").forEach(btn => {
           btn.addEventListener("click", (e) => {
             e.stopPropagation();
-            const status = btn.dataset.status;
-            setSalesStatus(office.id, status);
+            setSalesStatus(office.id, btn.dataset.status);
+            if(btn.dataset.status === "電話した"){
+              setCallTime(office.id, nowTimeStr());
+              if(!getVisitDate(office.id)) setVisitDate(office.id, todayStr());
+            }
             renderListAndMap(currentRenderedData);
             updateSummary(currentRenderedData);
-            setStatus(`${office.name} を「${status}」に更新しました。`);
+            setStatus(`${office.name} を「${btn.dataset.status}」に更新しました。`);
           });
         });
 
         item.querySelector(".visit-date-input").addEventListener("change", (e) => {
           setVisitDate(office.id, e.target.value);
-          renderListAndMap(currentRenderedData);
-          updateSummary(currentRenderedData);
           setStatus(`${office.name} の訪問日を保存しました。`);
         });
 
         item.querySelector(".next-visit-date-input").addEventListener("change", (e) => {
           setNextVisitDate(office.id, e.target.value);
-          renderListAndMap(currentRenderedData);
-          updateSummary(currentRenderedData);
           setStatus(`${office.name} の次回訪問日を保存しました。`);
         });
 
@@ -929,18 +1002,13 @@
           jumpToNextUnvisited(index + 1);
         });
 
-        item.querySelectorAll(".auto-call-link").forEach(link => {
-          link.addEventListener("click", () => {
-            markCalledFromPhoneTap(office);
-          });
+        item.querySelector(".auto-call-link").addEventListener("click", () => {
+          markCalled(office);
         });
       });
 
       if(linePoints.length >= 2){
-        routeLine = L.polyline(linePoints, {
-          weight: 4,
-          opacity: 0.7
-        }).addTo(map);
+        routeLine = L.polyline(linePoints, { weight:4, opacity:0.7 }).addTo(map);
       }
 
       updateSummary(data);
@@ -962,18 +1030,8 @@
       setStatus("絞り込みを反映しました。");
     }
 
-    function sortFollowPriority(){
-      const sorted = [...getFilteredData()].sort((a, b) => {
-        const diff = followPriorityScore(b) - followPriorityScore(a);
-        if(diff !== 0) return diff;
-        return a.name.localeCompare(b.name, "ja");
-      });
-      renderListAndMap(sorted);
-      setStatus("フォロー優先順に並べ替えました。");
-    }
-
     function resetFilters(){
-      wardFilter.value = "all";
+      wardSelect.value = "all";
       typeFilter.value = "all";
       salesStatusFilter.value = "all";
       todayFilter.value = "all";
@@ -991,7 +1049,6 @@
       while(remaining.length > 0){
         let bestIndex = 0;
         let bestDistance = Infinity;
-
         remaining.forEach((office, i) => {
           const d = haversine(current.lat, current.lng, office.lat, office.lng);
           if(d < bestDistance){
@@ -999,15 +1056,23 @@
             bestIndex = i;
           }
         });
-
         const next = remaining.splice(bestIndex, 1)[0];
         next.distanceFromPrev = bestDistance;
         if(ordered.length === 0) next.distanceFromStart = bestDistance;
         ordered.push(next);
         current = { lat: next.lat, lng: next.lng };
       }
-
       return ordered;
+    }
+
+    function sortFollowPriority(){
+      const sorted = [...getFilteredData()].sort((a, b) => {
+        const diff = followPriorityScore(b) - followPriorityScore(a);
+        if(diff !== 0) return diff;
+        return a.name.localeCompare(b.name, "ja");
+      });
+      renderListAndMap(sorted);
+      setStatus("フォロー優先順に並べ替えました。");
     }
 
     function getCurrentLocation(){
@@ -1015,15 +1080,10 @@
         alert("この端末では現在地取得に対応していません。");
         return;
       }
-
       setStatus("現在地を取得しています…");
-
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
-          currentPosition = {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude
-          };
+          currentPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
 
           if(userMarker) map.removeLayer(userMarker);
           if(searchMarker){
@@ -1031,10 +1091,7 @@
             searchMarker = null;
           }
 
-          userMarker = L.marker([currentPosition.lat, currentPosition.lng]).addTo(map)
-            .bindPopup("現在地")
-            .openPopup();
-
+          userMarker = L.marker([currentPosition.lat, currentPosition.lng]).addTo(map).bindPopup("現在地").openPopup();
           map.setView([currentPosition.lat, currentPosition.lng], 15);
 
           const address = await reverseGeocode(currentPosition.lat, currentPosition.lng);
@@ -1044,11 +1101,7 @@
           setStatus("現在地を取得できませんでした。位置情報の許可をご確認ください。");
           alert("現在地を取得できませんでした。");
         },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     }
 
@@ -1065,7 +1118,7 @@
 
     async function geocodePlace(query){
       try{
-        const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=ja&q=${encodeURIComponent(query + " 大阪")}`;
+        const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=ja&q=${encodeURIComponent(query + " 大阪市")}`;
         const res = await fetch(url);
         const data = await res.json();
         if(data && data.length > 0){
@@ -1089,7 +1142,6 @@
       }
 
       setStatus(`「${query}」を検索しています…`);
-
       const result = await geocodePlace(query);
       if(!result){
         setStatus(`「${query}」は見つかりませんでした。`);
@@ -1097,10 +1149,7 @@
         return;
       }
 
-      currentPosition = {
-        lat: result.lat,
-        lng: result.lng
-      };
+      currentPosition = { lat: result.lat, lng: result.lng };
 
       if(searchMarker) map.removeLayer(searchMarker);
       if(userMarker){
@@ -1108,10 +1157,7 @@
         userMarker = null;
       }
 
-      searchMarker = L.marker([result.lat, result.lng]).addTo(map)
-        .bindPopup(`検索地点<br>${result.name}`)
-        .openPopup();
-
+      searchMarker = L.marker([result.lat, result.lng]).addTo(map).bindPopup(`検索地点<br>${result.name}`).openPopup();
       map.setView([result.lat, result.lng], 15);
       setStatus(`検索地点を表示しました。<br>${result.name}`);
     }
@@ -1131,9 +1177,8 @@
         currentPosition,
         filtered.map(x => ({ ...x, distanceFromPrev:null, distanceFromStart:null }))
       );
-
       renderListAndMap(ordered);
-      setStatus("現在地を起点に、徒歩営業しやすい順へ並べ替えました。");
+      setStatus("現在地から近い順に並べ替えました。");
     }
 
     function sortTodayByWalkingOrder(){
@@ -1151,9 +1196,8 @@
         currentPosition,
         todayItems.map(x => ({ ...x, distanceFromPrev:null, distanceFromStart:null }))
       );
-
       renderListAndMap(ordered);
-      setStatus("今日回る先だけを徒歩順に並べ替えました。");
+      setStatus("今日回る先だけを近い順に並べ替えました。");
     }
 
     function jumpToNextUnvisited(startIndex = 0){
@@ -1161,25 +1205,16 @@
       if(data.length === 0) return;
 
       let nextIndex = -1;
-
       for(let i = startIndex; i < data.length; i++){
-        if(!getVisitState(data[i].id)){
-          nextIndex = i;
-          break;
-        }
+        if(!getVisitState(data[i].id)){ nextIndex = i; break; }
       }
-
       if(nextIndex === -1){
         for(let i = 0; i < startIndex; i++){
-          if(!getVisitState(data[i].id)){
-            nextIndex = i;
-            break;
-          }
+          if(!getVisitState(data[i].id)){ nextIndex = i; break; }
         }
       }
-
       if(nextIndex === -1){
-        setStatus("すべて訪問済みです。お疲れさまでした。");
+        setStatus("すべて訪問済みです。");
         alert("すべて訪問済みです。");
         return;
       }
@@ -1195,85 +1230,58 @@
       }
 
       if(markers[nextIndex]) markers[nextIndex].openPopup();
-
       setStatus(`次の未訪問先は「${office.name}」です。`);
     }
 
     function generateDailyReport(){
-      const todayItems = offices.filter(o => isTodayTarget(o.id));
-      const todayVisited = todayItems.filter(o => getVisitState(o.id));
-      const called = todayItems.filter(o => getSalesStatus(o.id) === "電話した");
-      const absent = todayItems.filter(o => getSalesStatus(o.id) === "不在");
-      const revisit = todayItems.filter(o => getSalesStatus(o.id) === "再訪問");
-      const hot = todayItems.filter(o => getSalesStatus(o.id) === "見込みあり");
-      const contract = todayItems.filter(o => getSalesStatus(o.id) === "契約候補");
-      const followToday = offices.filter(o => isFollowToday(o.id));
-      const overdue = offices.filter(o => isFollowOverdue(o.id));
+      const visible = currentRenderedData;
+      const todayItems = visible.filter(o => isTodayTarget(o.id));
+      const visited = visible.filter(o => getVisitState(o.id));
+      const called = visible.filter(o => getSalesStatus(o.id) === "電話した");
+      const absent = visible.filter(o => getSalesStatus(o.id) === "不在");
+      const revisit = visible.filter(o => getSalesStatus(o.id) === "再訪問");
+      const hot = visible.filter(o => getSalesStatus(o.id) === "見込みあり");
+      const contract = visible.filter(o => getSalesStatus(o.id) === "契約候補");
+      const followToday = visible.filter(o => isFollowToday(o.id));
+      const overdue = visible.filter(o => isFollowOverdue(o.id));
 
-      const today = new Date();
-      const dateText = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日`;
+      const d = new Date();
+      const dateText = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
 
       let report = "";
       report += `【営業日報】\n`;
       report += `日付：${dateText}\n\n`;
-      report += `■本日の予定件数\n${todayItems.length}件\n\n`;
-      report += `■本日の訪問済み件数\n${todayVisited.length}件\n\n`;
-      report += `■営業状況集計\n`;
+      report += `表示件数：${visible.length}件\n`;
+      report += `今日予定：${todayItems.length}件\n`;
+      report += `訪問済み：${visited.length}件\n`;
       report += `電話した：${called.length}件\n`;
       report += `不在：${absent.length}件\n`;
       report += `再訪問：${revisit.length}件\n`;
       report += `見込みあり：${hot.length}件\n`;
-      report += `契約候補：${contract.length}件\n\n`;
+      report += `契約候補：${contract.length}件\n`;
+      report += `今日フォロー：${followToday.length}件\n`;
+      report += `期限超過：${overdue.length}件\n\n`;
 
-      report += `■本日フォロー予定\n${followToday.length}件\n`;
-      report += `■期限超過フォロー\n${overdue.length}件\n\n`;
-
-      report += `■本日の訪問先詳細\n`;
-      if(todayItems.length === 0){
-        report += `本日の予定登録はありません。\n`;
-      } else {
-        todayItems.forEach((office, idx) => {
-          const memo = getMemo(office.id).trim();
-          report += `${idx + 1}. ${office.name}\n`;
-          report += `区：${office.ward}\n`;
-          report += `種別：${office.type}\n`;
-          report += `状態：${getSalesStatus(office.id)}\n`;
-          report += `電話時刻：${getCallTime(office.id) || "未記録"}\n`;
-          report += `訪問済み：${getVisitState(office.id) ? "はい" : "いいえ"}\n`;
-          report += `訪問日：${getVisitDate(office.id) || "未設定"}\n`;
-          report += `次回訪問日：${getNextVisitDate(office.id) || "未設定"}\n`;
-          report += `フォロー予定日：${getFollowDate(office.id) || "未設定"}\n`;
-          report += `電話：${office.phone}\n`;
-          report += `住所：${office.address}\n`;
-          report += `メモ：${memo ? memo : "なし"}\n\n`;
-        });
-      }
-
-      report += `■期限超過フォロー先\n`;
-      if(overdue.length === 0){
-        report += `なし\n\n`;
-      } else {
-        overdue.forEach((office, idx) => {
-          report += `${idx + 1}. ${office.name} / フォロー予定日: ${getFollowDate(office.id)}\n`;
-        });
-        report += `\n`;
-      }
-
-      report += `■総括\n`;
-      if(contract.length > 0){
-        report += `契約候補が出ています。優先フォロー推奨です。\n`;
-      }else if(hot.length > 0){
-        report += `見込み先があるため、早めの再接触が有効です。\n`;
-      }else if(overdue.length > 0){
-        report += `期限超過のフォロー先があります。優先対応が必要です。\n`;
-      }else if(revisit.length > 0 || absent.length > 0){
-        report += `再訪問・不在先の再アプローチが必要です。\n`;
-      }else{
-        report += `本日の対応内容をもとに次回アクション設定をお願いします。\n`;
-      }
+      report += `■詳細\n`;
+      visible.forEach((office, idx) => {
+        report += `${idx + 1}. ${office.name}\n`;
+        if(office.kana) report += `かな：${office.kana}\n`;
+        report += `区：${office.ward}\n`;
+        report += `種別：${office.type}\n`;
+        report += `状態：${getSalesStatus(office.id)}\n`;
+        report += `訪問済み：${getVisitState(office.id) ? "はい" : "いいえ"}\n`;
+        report += `今日予定：${isTodayTarget(office.id) ? "はい" : "いいえ"}\n`;
+        report += `電話時刻：${getCallTime(office.id) || "未記録"}\n`;
+        report += `訪問日：${getVisitDate(office.id) || "未設定"}\n`;
+        report += `次回訪問日：${getNextVisitDate(office.id) || "未設定"}\n`;
+        report += `フォロー予定日：${getFollowDate(office.id) || "未設定"}\n`;
+        report += `電話：${office.phone}\n`;
+        report += `住所：${office.address}\n`;
+        report += `メモ：${getMemo(office.id) || "なし"}\n\n`;
+      });
 
       dailyReportEl.value = report;
-      setStatus("本日の営業日報を作成しました。");
+      setStatus("日報を作成しました。");
     }
 
     async function copyDailyReport(){
@@ -1282,36 +1290,34 @@
         alert("先に日報を作成してください。");
         return;
       }
-
       try{
         await navigator.clipboard.writeText(text);
-        setStatus("営業日報をコピーしました。");
+        setStatus("日報をコピーしました。");
         alert("日報をコピーしました。");
       }catch(e){
         dailyReportEl.select();
         document.execCommand("copy");
-        setStatus("営業日報をコピーしました。");
+        setStatus("日報をコピーしました。");
         alert("日報をコピーしました。");
       }
     }
 
     function exportSalesData(){
       const rows = [[
-        "順番","事業所名","区","種別","電話","住所","今日回る","訪問済み","営業状態",
-        "電話時刻","訪問日","次回訪問日","フォロー予定日","メモ"
+        "区名","種別","事業所名","事業所名かな","住所","電話","営業状態","訪問済み","今日予定","電話時刻","訪問日","次回訪問日","フォロー予定日","メモ"
       ]];
 
-      currentRenderedData.forEach((office, index) => {
+      currentRenderedData.forEach(office => {
         rows.push([
-          index + 1,
-          office.name,
           office.ward,
           office.type,
-          office.phone,
+          office.name,
+          office.kana || "",
           office.address,
-          isTodayTarget(office.id) ? "はい" : "いいえ",
-          getVisitState(office.id) ? "はい" : "いいえ",
+          office.phone,
           getSalesStatus(office.id),
+          getVisitState(office.id) ? "はい" : "いいえ",
+          isTodayTarget(office.id) ? "はい" : "いいえ",
           getCallTime(office.id),
           getVisitDate(office.id),
           getNextVisitDate(office.id),
@@ -1328,30 +1334,90 @@
       const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
       link.href = url;
-      link.download = "eigyo_app_complete.csv";
+      link.download = "eigyo_osakashi_premium.csv";
       link.click();
       URL.revokeObjectURL(url);
 
-      setStatus("営業データをCSVで出力しました。");
+      setStatus("CSVを出力しました。");
     }
 
-    function clearVisitData(){
-      if(!confirm("訪問記録、営業状態、今日予定、日付、電話時刻、メモをすべて消しますか？")) return;
+    function importCSV(){
+      const text = csvInput.value.trim();
+      if(!text){
+        alert("CSVを貼ってください。");
+        return;
+      }
 
-      offices.forEach(office => {
-        localStorage.removeItem("visit_" + office.id);
-        localStorage.removeItem("memo_" + office.id);
-        localStorage.removeItem("sales_status_" + office.id);
-        localStorage.removeItem("today_target_" + office.id);
-        localStorage.removeItem("visit_date_" + office.id);
-        localStorage.removeItem("next_visit_date_" + office.id);
-        localStorage.removeItem("follow_date_" + office.id);
-        localStorage.removeItem("call_time_" + office.id);
+      const lines = text.split(/\r?\n/).filter(Boolean);
+      let count = 0;
+
+      lines.forEach((line, index) => {
+        const cols = line.split(",").map(v => v.trim());
+
+        if(index === 0 && cols[0] === "区名") return;
+        if(cols.length < 8) return;
+
+        const [ward, type, name, kana, address, phone, latStr, lngStr] = cols;
+        const lat = parseFloat(latStr);
+        const lng = parseFloat(lngStr);
+
+        if(!ward || !type || !name || !address || !phone || Number.isNaN(lat) || Number.isNaN(lng)){
+          return;
+        }
+
+        const id = safeId(`${ward}-${name}-${phone}`);
+        if(offices.some(o => o.id === id)) return;
+
+        offices.push({
+          id,
+          ward,
+          type,
+          name,
+          kana,
+          address,
+          phone,
+          lat,
+          lng
+        });
+
+        count++;
       });
 
-      dailyReportEl.value = "";
-      renderListAndMap(currentRenderedData);
-      setStatus("営業記録をすべて消去しました。");
+      refreshWardOptions();
+      renderListAndMap(offices);
+      setStatus(`${count}件 追加しました。`);
+    }
+
+    function loadCSVExample(){
+      csvInput.value = [
+        "区名,種別,事業所名,事業所名かな,住所,電話,緯度,経度",
+        "北区,居宅介護支援事業所,みどりケアプランセンター,みどりけあぷらんせんたー,大阪市北区芝田1-1-1,06-0000-1111,34.705,135.498",
+        "阿倍野区,居宅介護支援事業所,あべのケアサポート,あべのけあさぽーと,大阪市阿倍野区阿倍野筋1-1-1,06-0000-2222,34.645,135.513"
+      ].join("\n");
+    }
+
+    function addOfficeFromForm(){
+      const ward = document.getElementById("newWard").value.trim();
+      const type = document.getElementById("newType").value;
+      const name = document.getElementById("newName").value.trim();
+      const kana = document.getElementById("newKana").value.trim();
+      const phone = document.getElementById("newPhone").value.trim();
+      const address = document.getElementById("newAddress").value.trim();
+      const lat = parseFloat(document.getElementById("newLat").value.trim());
+      const lng = parseFloat(document.getElementById("newLng").value.trim());
+
+      if(!ward || !type || !name || !phone || !address || Number.isNaN(lat) || Number.isNaN(lng)){
+        alert("全部入れてください。");
+        return;
+      }
+
+      const id = safeId(`${ward}-${name}-${phone}`);
+      offices.push({ id, ward, type, name, kana, address, phone, lat, lng });
+
+      refreshWardOptions();
+      addSnippetEl.textContent = `{ id:"${id}", ward:"${ward}", type:"${type}", name:"${name}", kana:"${kana}", address:"${address}", phone:"${phone}", lat:${lat}, lng:${lng} },`;
+      renderListAndMap(offices);
+      setStatus(`${name} を追加しました。`);
     }
 
     renderListAndMap(offices);
