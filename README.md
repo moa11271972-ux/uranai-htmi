@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>営業アプリ｜安定版</title>
+  <title>営業アプリ｜全部検索対応版</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     *{box-sizing:border-box}
@@ -151,6 +151,16 @@
       color:#2146d0;
       font-weight:700;
     }
+    .source{
+      margin-top:8px;
+      font-size:12px;
+      line-height:1.6;
+      color:#5f6b7d;
+      background:#f8fbff;
+      border:1px solid #e6eefc;
+      border-radius:10px;
+      padding:8px 10px;
+    }
     .badge-row{
       display:flex;
       flex-wrap:wrap;
@@ -247,7 +257,7 @@
   </style>
 </head>
 <body>
-  <header>営業アプリ｜安定版</header>
+  <header>営業アプリ｜全部検索対応版</header>
 
   <div class="wrap">
     <div class="box">
@@ -279,7 +289,7 @@
           <option value="not_today">今日回る先以外</option>
         </select>
 
-        <input id="keyword" type="text" placeholder="区名・駅名・事業所名・住所・電話で検索" />
+        <input id="keyword" type="text" placeholder="区名・駅名・種別・事業所名・住所・電話・出典・確認日で検索" />
         <input id="placeSearch" type="text" placeholder="本町駅・梅田駅・天王寺駅などを検索" />
 
         <button onclick="applyFilters()">絞り込み</button>
@@ -320,12 +330,13 @@
 
     <div class="subgrid">
       <div class="box">
-        <div class="panel-title" style="margin:-12px -12px 12px -12px; border-radius:16px 16px 0 0;">居宅をCSVで追加</div>
+        <div class="panel-title" style="margin:-12px -12px 12px -12px; border-radius:16px 16px 0 0;">CSV一括追加</div>
         <div class="footer">
-          CSV列順：<strong>区名,種別,事業所名,住所,電話,緯度,経度,出典,確認日,検索補助語</strong>
+          CSV列順：<strong>区名,種別,事業所名,住所,電話,緯度,経度,出典,確認日,検索補助語</strong><br>
+          検索補助語には駅名・通称・エリア名を入れられます。
         </div>
         <textarea id="csvInput" class="big-text" placeholder="例:
-中央区,居宅介護支援事業所,サンプル中央ケア,大阪市中央区南本町1-1-1,06-0000-1111,34.680,135.509,介護保険事業所台帳情報,2026-03,本町駅 堺筋本町 中央区"></textarea>
+中央区,居宅介護支援事業所,中央ケアプランセンター本町,大阪市中央区南本町1-1-1,06-0000-1111,34.680,135.509,介護保険事業所台帳情報,2026-03,本町駅 堺筋本町駅 中央区"></textarea>
         <div class="row" style="margin-top:10px;">
           <button class="green-btn" onclick="importCSV()">CSV追加</button>
           <button class="orange-btn" onclick="loadCSVExample()">例を入れる</button>
@@ -405,6 +416,7 @@
         .replace(/　/g, " ")
         .replace(/ヶ/g, "ケ")
         .replace(/之/g, "の")
+        .replace(/－/g, "-")
         .trim();
     }
 
@@ -512,18 +524,18 @@
           (todayMode === "not_today" && !isTodayTarget(office.id));
 
         const searchableText = normalizeText([
+          office.id,
           office.ward,
           office.type,
           office.name,
           office.address,
           office.phone,
           office.source || "",
+          office.checked || "",
           office.keywords || ""
         ].join(" "));
 
-        const keywordOk =
-          keywords.length === 0 ||
-          keywords.every(word => searchableText.includes(word));
+        const keywordOk = keywords.length === 0 || keywords.every(word => searchableText.includes(word));
 
         return wardOk && typeOk && statusOk && todayOk && keywordOk;
       });
@@ -960,6 +972,9 @@
         report += `電話時刻：${getCallTime(office.id) || "未記録"}\n`;
         report += `電話：${office.phone}\n`;
         report += `住所：${office.address}\n`;
+        report += `出典：${office.source || "未設定"}\n`;
+        report += `確認日：${office.checked || "未設定"}\n`;
+        report += `検索補助語：${office.keywords || ""}\n`;
         report += `メモ：${getMemo(office.id) || "なし"}\n\n`;
       });
 
@@ -1014,7 +1029,7 @@
       const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
       link.href = url;
-      link.download = "eigyo_app.csv";
+      link.download = "eigyo_app_all_search.csv";
       link.click();
       URL.revokeObjectURL(url);
     }
@@ -1029,20 +1044,29 @@
       const lines = text.split(/\r?\n/).filter(Boolean);
       let count = 0;
 
-      lines.forEach(line => {
+      lines.forEach((line, index) => {
         const cols = line.split(",").map(v => v.trim());
+        if(index === 0 && cols[0] === "区名") return;
         if(cols.length < 10) return;
 
         const [ward, type, name, address, phone, latStr, lngStr, source, checked, keywords] = cols;
         const lat = parseFloat(latStr);
         const lng = parseFloat(lngStr);
+
         if(!ward || !type || !name || !address || !phone || Number.isNaN(lat) || Number.isNaN(lng)) return;
 
         const id = safeId(`${ward}-${name}-${phone}`);
         if(offices.some(o => o.id === id)) return;
 
         offices.push({
-          id, ward, type, name, address, phone, lat, lng,
+          id,
+          ward,
+          type,
+          name,
+          address,
+          phone,
+          lat,
+          lng,
           source: source || "CSV追加",
           checked: checked || todayStr(),
           keywords: keywords || ""
@@ -1057,9 +1081,11 @@
 
     function loadCSVExample(){
       csvInput.value = [
-        "中央区,居宅介護支援事業所,サンプル中央ケア,大阪市中央区南本町1-1-1,06-0000-1111,34.680,135.509,介護保険事業所台帳情報,2026-03,本町駅 堺筋本町 中央区",
-        "北区,居宅介護支援事業所,サンプル北ケア,大阪市北区芝田1-1-1,06-0000-2222,34.705,135.498,介護保険事業所台帳情報,2026-03,大阪駅 梅田駅 北区"
-      ].join("\n");
+        "区名,種別,事業所名,住所,電話,緯度,経度,出典,確認日,検索補助語",
+        "中央区,居宅介護支援事業所,中央ケアプランセンター本町,大阪市中央区南本町1-1-1,06-0000-1111,34.680,135.509,介護保険事業所台帳情報,2026-03,本町駅 堺筋本町駅 中央区",
+        "中央区,居宅介護支援事業所,中央ケアプランセンター谷四,大阪市中央区常盤町1-2-3,06-0000-2222,34.681,135.517,介護保険事業所台帳情報,2026-03,谷町四丁目駅 谷四 中央区",
+        "北区,居宅介護支援事業所,北ケアプランセンター梅田,大阪市北区芝田1-1-1,06-0000-3333,34.705,135.498,介護保険事業所台帳情報,2026-03,大阪駅 梅田駅 北区"
+      ].join("\\n");
     }
 
     renderListAndMap(offices);
