@@ -1,210 +1,285 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>営業アプリ｜大阪市全区＋居宅完全版</title>
+  <title>営業アプリ｜大阪市全区 自動読込＋住所座標化版</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:"Hiragino Sans","Yu Gothic","Meiryo",sans-serif;
-      background:#f4f7fb;
-      color:#222;
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Hiragino Sans","Yu Gothic","Meiryo",sans-serif;
+      background: #f4f7fb;
+      color: #222;
     }
-    header{
-      background:linear-gradient(135deg,#2146d0,#4f7cff);
-      color:#fff;
-      padding:16px;
-      text-align:center;
-      font-size:22px;
-      font-weight:700;
+    header {
+      background: linear-gradient(135deg,#2146d0,#4f7cff);
+      color: #fff;
+      padding: 16px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
     }
-    .wrap{max-width:1650px;margin:0 auto;padding:14px}
-    .box,.panel{
-      background:#fff;
-      border-radius:16px;
-      box-shadow:0 8px 22px rgba(0,0,0,.08);
-      margin-bottom:14px;
+    .wrap {
+      max-width: 1680px;
+      margin: 0 auto;
+      padding: 14px;
     }
-    .box{padding:12px}
-    .panel{overflow:hidden}
-    .panel-title{
-      padding:14px 16px;
-      font-weight:700;
-      border-bottom:1px solid #eef1f7;
-      background:#fafcff;
+    .box, .panel {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 22px rgba(0,0,0,.08);
+      margin-bottom: 14px;
     }
-    .notice{
-      background:#fff8e8;
-      border:1px solid #f3d38f;
-      color:#6c4d00;
-      border-radius:12px;
-      padding:12px;
-      line-height:1.8;
-      font-size:13px;
+    .box { padding: 12px; }
+    .panel { overflow: hidden; }
+    .panel-title {
+      padding: 14px 16px;
+      font-weight: 700;
+      border-bottom: 1px solid #eef1f7;
+      background: #fafcff;
     }
-    .row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      align-items:center;
+    .notice {
+      background: #fff8e8;
+      border: 1px solid #f3d38f;
+      color: #6c4d00;
+      border-radius: 12px;
+      padding: 12px;
+      line-height: 1.8;
+      font-size: 13px;
     }
-    select,input,button,textarea{
-      border:1px solid #dbe3f2;
-      border-radius:12px;
-      padding:12px;
-      font-size:14px;
-      background:#fff;
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
     }
-    input{min-width:150px}
-    button{
-      border:none;
-      background:#2146d0;
-      color:#fff;
-      cursor:pointer;
-      white-space:nowrap;
+    select, input, button, textarea {
+      border: 1px solid #dbe3f2;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      background: #fff;
     }
-    button:hover{opacity:.92}
-    .green-btn{background:#16a34a}
-    .orange-btn{background:#f97316}
-    .red-btn{background:#c51616}
-    .gray-btn{background:#7d8aa5}
-    .purple-btn{background:#7a34c2}
+    input { min-width: 150px; }
+    button {
+      border: none;
+      background: #2146d0;
+      color: #fff;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    button:hover { opacity: .92; }
+    .green-btn { background: #16a34a; }
+    .orange-btn { background: #f97316; }
+    .red-btn { background: #c51616; }
+    .purple-btn { background: #7a34c2; }
+    .gray-btn { background: #7d8aa5; }
 
-    .status-box{
-      margin-top:10px;
-      padding:10px 12px;
-      background:#f7faff;
-      border:1px solid #e1e9fb;
-      border-radius:12px;
-      font-size:13px;
-      color:#3b4d6b;
-      line-height:1.7;
+    .status-box {
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: #f7faff;
+      border: 1px solid #e1e9fb;
+      border-radius: 12px;
+      font-size: 13px;
+      color: #3b4d6b;
+      line-height: 1.7;
     }
-    .chips{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      margin-top:10px;
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
     }
-    .chip{
-      background:#eef3ff;
-      color:#2146d0;
-      padding:8px 12px;
-      border-radius:999px;
-      font-size:13px;
-      font-weight:700;
+    .chip {
+      background: #eef3ff;
+      color: #2146d0;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
     }
 
-    .layout{
-      display:grid;
-      grid-template-columns:560px 1fr;
-      gap:14px;
+    .layout {
+      display: grid;
+      grid-template-columns: 560px 1fr;
+      gap: 14px;
     }
-    .list{
-      height:78vh;
-      overflow:auto;
+    .list {
+      height: 78vh;
+      overflow: auto;
     }
-    .card{
-      padding:14px 16px;
-      border-bottom:1px solid #eef1f7;
-      cursor:pointer;
-      transition:.2s;
-      background:#fff;
+    .card {
+      padding: 14px 16px;
+      border-bottom: 1px solid #eef1f7;
+      cursor: pointer;
+      transition: .2s;
+      background: #fff;
     }
-    .card:hover{background:#f5f8ff}
-    .card.active{
-      background:#eaf0ff;
-      border-left:5px solid #2146d0;
+    .card:hover { background: #f5f8ff; }
+    .card.active {
+      background: #eaf0ff;
+      border-left: 5px solid #2146d0;
     }
-    .card.visited{background:#f2f9f2}
-    .card.today{box-shadow: inset 0 0 0 2px #7a34c2}
-    .topline{
-      display:flex;
-      gap:10px;
-      justify-content:space-between;
-      align-items:flex-start;
-    }
-    .order-badge{
-      width:34px;height:34px;border-radius:999px;
-      display:flex;align-items:center;justify-content:center;
-      background:#2146d0;color:#fff;font-weight:700;flex-shrink:0;
-    }
-    .name{font-weight:700;line-height:1.5;margin-bottom:6px}
-    .meta{font-size:13px;color:#536076;line-height:1.7;margin-top:6px}
-    .distance{margin-top:8px;font-size:13px;color:#2146d0;font-weight:700}
-    .source{
-      margin-top:8px;font-size:12px;line-height:1.6;color:#5f6b7d;
-      background:#f8fbff;border:1px solid #e6eefc;border-radius:10px;padding:8px 10px;
-    }
-    .badge-row{
-      display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;
-    }
-    .badge{
-      font-size:12px;padding:4px 8px;border-radius:999px;
-      background:#eef3ff;color:#2146d0;
-    }
-    .badge.called{ background:#e8f0ff; color:#1f5ed8; }
-    .badge.absent{ background:#fff3e8; color:#c46b00; }
-    .badge.revisit{ background:#f6ebff; color:#7a34c2; }
-    .badge.hot{ background:#e9f9ef; color:#138548; }
-    .badge.contract{ background:#eaf7ff; color:#0070a8; }
-    .badge.done{ background:#e8f6e8; color:#208340; }
-    .badge.todaybadge{ background:#f4eaff; color:#7a34c2; }
+    .card.visited { background: #f2f9f2; }
+    .card.today { box-shadow: inset 0 0 0 2px #7a34c2; }
 
-    .action-row{
-      display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center;
+    .topline {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: flex-start;
     }
-    .small-btn{
-      padding:8px 10px;font-size:12px;border-radius:10px;background:#4f7cff;
-      color:#fff;text-decoration:none;display:inline-block;
+    .order-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #2146d0;
+      color: #fff;
+      font-weight: 700;
+      flex-shrink: 0;
     }
-    .small-btn.green{background:#16a34a}
-    .small-btn.orange{background:#f97316}
-    .small-btn.gray{background:#7d8aa5}
-    .small-btn.purple{background:#8b5cf6}
-    .small-btn.teal{background:#0f9fb8}
+    .name {
+      font-weight: 700;
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+    .meta {
+      font-size: 13px;
+      color: #536076;
+      line-height: 1.7;
+      margin-top: 6px;
+    }
+    .distance {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #2146d0;
+      font-weight: 700;
+    }
+    .source {
+      margin-top: 8px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #5f6b7d;
+      background: #f8fbff;
+      border: 1px solid #e6eefc;
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .badge {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #eef3ff;
+      color: #2146d0;
+    }
+    .badge.called { background: #e8f0ff; color: #1f5ed8; }
+    .badge.absent { background: #fff3e8; color: #c46b00; }
+    .badge.revisit { background: #f6ebff; color: #7a34c2; }
+    .badge.hot { background: #e9f9ef; color: #138548; }
+    .badge.contract { background: #eaf7ff; color: #0070a8; }
+    .badge.done { background: #e8f6e8; color: #208340; }
+    .badge.todaybadge { background: #f4eaff; color: #7a34c2; }
+    .badge.pending { background: #fff7e6; color: #a16207; }
 
-    .visit-check{
-      display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#2c4b85;
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      align-items: center;
     }
-    .memo-box{
-      width:100%;min-height:72px;margin-top:10px;resize:vertical;font-size:13px;line-height:1.5;
+    .small-btn {
+      padding: 8px 10px;
+      font-size: 12px;
+      border-radius: 10px;
+      background: #4f7cff;
+      color: #fff;
+      text-decoration: none;
+      display: inline-block;
     }
-    #map{
-      width:100%;height:78vh;min-height:520px;background:#d8dde8;
+    .small-btn.green { background: #16a34a; }
+    .small-btn.orange { background: #f97316; }
+    .small-btn.gray { background: #7d8aa5; }
+    .small-btn.purple { background: #8b5cf6; }
+    .small-btn.teal { background: #0f9fb8; }
+
+    .visit-check {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #2c4b85;
     }
-    .subgrid{
-      display:grid;grid-template-columns:1fr 1fr;gap:14px;
+    .memo-box {
+      width: 100%;
+      min-height: 72px;
+      margin-top: 10px;
+      resize: vertical;
+      font-size: 13px;
+      line-height: 1.5;
     }
-    .big-text{
-      width:100%;min-height:220px;resize:vertical;font-size:13px;line-height:1.6;
+    #map {
+      width: 100%;
+      height: 78vh;
+      min-height: 520px;
+      background: #d8dde8;
     }
-    .footer{font-size:12px;color:#5f6b7d;line-height:1.8}
-    a.tel-link{
-      color:#2146d0;text-decoration:none;font-weight:700;
+    .subgrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
     }
-    .muted{font-size:12px;color:#6b7280}
-    @media (max-width:1100px){
-      .layout{grid-template-columns:1fr}
-      .list{height:420px}
-      #map{height:58vh;min-height:380px}
-      .subgrid{grid-template-columns:1fr}
+    .big-text {
+      width: 100%;
+      min-height: 220px;
+      resize: vertical;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .footer {
+      font-size: 12px;
+      color: #5f6b7d;
+      line-height: 1.8;
+    }
+    a.tel-link {
+      color: #2146d0;
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .muted {
+      font-size: 12px;
+      color: #6b7280;
+    }
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+      .list { height: 420px; }
+      #map { height: 58vh; min-height: 380px; }
+      .subgrid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <header>営業アプリ｜大阪市全区＋居宅完全版</header>
+  <header>営業アプリ｜大阪市全区 自動読込＋住所座標化版</header>
 
   <div class="wrap">
     <div class="box">
       <div class="notice">
         このアプリは公開されている事業所情報の表示を前提にしています。<br>
-        利用者氏名、家族情報、病歴、私用携帯、個人メールアドレスは入力しないでください。<br>
-        大阪市の地域包括・ブランチは内蔵し、居宅は大阪府の公開CSVから読み込めるようにしています。
+        地域包括・ブランチは住所から順番に座標化し、端末内に保存します。初回は少し時間がかかります。<br>
+        居宅は大阪府CSVの緯度経度があればそのまま使います。
       </div>
     </div>
 
@@ -253,11 +328,9 @@
       </div>
 
       <div class="row" style="margin-top:10px;">
-        <button class="green-btn" onclick="loadOfficialKyotaku()">公式居宅を読込</button>
+        <button class="green-btn" onclick="loadAllOfficialData(true)">再読込</button>
+        <button class="orange-btn" onclick="clearGeocodeCache()">座標キャッシュ削除</button>
         <input id="officialCsvFiles" type="file" accept=".csv,text/csv" multiple onchange="loadKyotakuFromFiles(event)" />
-      </div>
-      <div class="muted" style="margin-top:6px;">
-        公式読込がうまくいかない場合は、大阪府ページから「居宅サービス等1」「居宅サービス等2」をダウンロードして、ここで2ファイルまとめて選んでください。
       </div>
 
       <div id="statusBox" class="status-box">現在地はまだ取得していません。</div>
@@ -287,9 +360,7 @@
     <div class="subgrid">
       <div class="box">
         <div class="panel-title" style="margin:-12px -12px 12px -12px; border-radius:16px 16px 0 0;">CSV手動追加</div>
-        <div class="footer">
-          列順：区名,種別,事業所名,住所,電話,緯度,経度,出典,確認日,検索補助語
-        </div>
+        <div class="footer">列順：区名,種別,事業所名,住所,電話,緯度,経度,出典,確認日,検索補助語</div>
         <textarea id="csvInput" class="big-text" placeholder="例:
 中央区,居宅介護支援事業所,中央ケアプランセンター本町,大阪市中央区南本町1-1-1,06-0000-1111,34.680,135.509,介護保険事業所台帳情報,2026-03,本町駅 堺筋本町駅 中央区"></textarea>
         <div class="row" style="margin-top:10px;">
@@ -306,23 +377,13 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    const OFFICES = [
-      { id:"chuo", ward:"中央区", type:"地域包括支援センター", name:"中央区地域包括支援センター", address:"大阪市中央区上本町西2-5-25", phone:"06-6763-8139", lat:34.6730, lng:135.5203, source:"大阪市 地域包括支援センター一覧", checked:"2026-04-22", keywords:"中央区 谷町六丁目駅 谷町六丁目 谷六 上本町 松屋町" },
-      { id:"chuo-hokubu", ward:"中央区", type:"地域包括支援センター", name:"中央区北部地域包括支援センター", address:"大阪市中央区農人橋3-1-3 ドミール堺筋本町1階", phone:"06-6944-2116", lat:34.6809, lng:135.5125, source:"大阪市 地域包括支援センター一覧", checked:"2026-04-22", keywords:"中央区 本町駅 本町 堺筋本町駅 堺筋本町 谷町四丁目駅 谷町四丁目" },
-      { id:"kita", ward:"北区", type:"地域包括支援センター", name:"北区地域包括支援センター", address:"大阪市北区神山町15-11", phone:"06-6313-5568", lat:34.7054, lng:135.5069, source:"大阪市 地域包括支援センター一覧", checked:"2026-04-22", keywords:"北区 扇町駅 中崎町駅 梅田 天満" },
-      { id:"branch-kita-umeda", ward:"北区", type:"総合相談窓口（ブランチ）", name:"梅田東ブランチ", address:"大阪市北区芝田2-10-39", phone:"06-6372-0804", lat:34.7079, lng:135.4946, source:"大阪市 総合相談窓口（ブランチ）一覧", checked:"2026-04-22", keywords:"北区 梅田駅 大阪駅 中津駅" },
-      { id:"abeno", ward:"阿倍野区", type:"地域包括支援センター", name:"阿倍野区地域包括支援センター", address:"大阪市阿倍野区帝塚山1-3-8", phone:"06-6628-1400", lat:34.6258, lng:135.5015, source:"大阪市 地域包括支援センター一覧", checked:"2026-04-22", keywords:"阿倍野区 姫松駅 帝塚山駅" },
-      { id:"tennoji", ward:"天王寺区", type:"地域包括支援センター", name:"天王寺区地域包括支援センター", address:"大阪市天王寺区六万体町5-26", phone:"06-6774-3386", lat:34.6589, lng:135.5166, source:"大阪市 地域包括支援センター一覧", checked:"2026-04-22", keywords:"天王寺区 四天王寺前夕陽ヶ丘駅 谷町九丁目駅" },
-      { id:"naniwa", ward:"浪速区", type:"地域包括支援センター", name:"浪速区地域包括支援センター", address:"大阪市浪速区難波中3-8-8", phone:"06-6636-6029", lat:34.6614, lng:135.4964, source:"大阪市 地域包括支援センター一覧", checked:"2026-04-22", keywords:"浪速区 難波駅 なんば駅 大国町駅" },
-      { id:"nishi", ward:"西区", type:"地域包括支援センター", name:"西区地域包括支援センター", address:"大阪市西区新町4-5-14", phone:"06-6539-8075", lat:34.6767, lng:135.4893, source:"大阪市 地域包括支援センター一覧", checked:"2026-04-22", keywords:"西区 西長堀駅 阿波座駅 西大橋駅" }
-    ];
-
+    const OSAKA_CITY_OFFICIAL_CSV = "https://www.city.osaka.lg.jp/fukushi/cmsfiles/contents/0000370/370519/6csv.csv";
     const OSAKA_PREF_OFFICIAL_CSVS = [
       "https://www.pref.osaka.lg.jp/documents/23900/202603kyotaku01.csv",
       "https://www.pref.osaka.lg.jp/documents/23900/202603kyotaku02.csv"
     ];
 
-    const offices = [...OFFICES];
+    const offices = [];
 
     const wardSelect = document.getElementById("wardFilter");
     const typeFilter = document.getElementById("typeFilter");
@@ -342,8 +403,41 @@
     const calledCountEl = document.getElementById("calledCount");
     const hotCountEl = document.getElementById("hotCount");
 
+    const OSAKA_WARDS = [
+      "北区","都島区","福島区","此花区","中央区","西区","港区","大正区","天王寺区","浪速区",
+      "西淀川区","淀川区","東淀川区","東成区","生野区","旭区","城東区","鶴見区","阿倍野区",
+      "住之江区","住吉区","東住吉区","平野区","西成区"
+    ];
+
+    const WARD_STATIONS = {
+      "北区":["梅田駅","大阪駅","中津駅","天神橋筋六丁目駅","扇町駅","南森町駅"],
+      "都島区":["都島駅","京橋駅","桜ノ宮駅","野江内代駅"],
+      "福島区":["福島駅","新福島駅","海老江駅","野田駅","野田阪神駅"],
+      "此花区":["西九条駅","千鳥橋駅","伝法駅","安治川口駅"],
+      "中央区":["本町駅","堺筋本町駅","谷町四丁目駅","谷町六丁目駅","北浜駅","天満橋駅"],
+      "西区":["西長堀駅","阿波座駅","西大橋駅","四ツ橋駅"],
+      "港区":["弁天町駅","朝潮橋駅","大阪港駅"],
+      "大正区":["大正駅"],
+      "天王寺区":["天王寺駅","谷町九丁目駅","桃谷駅","四天王寺前夕陽ヶ丘駅"],
+      "浪速区":["なんば駅","難波駅","大国町駅","恵美須町駅","新今宮駅"],
+      "西淀川区":["御幣島駅","福駅","塚本駅"],
+      "淀川区":["新大阪駅","十三駅","三国駅","東三国駅"],
+      "東淀川区":["淡路駅","上新庄駅","井高野駅","瑞光四丁目駅"],
+      "東成区":["今里駅","玉造駅","新深江駅","森ノ宮駅"],
+      "生野区":["桃谷駅","小路駅","北巽駅","南巽駅"],
+      "旭区":["関目高殿駅","千林大宮駅","城北公園通駅"],
+      "城東区":["京橋駅","蒲生四丁目駅","野江駅","今福鶴見駅"],
+      "鶴見区":["横堤駅","今福鶴見駅"],
+      "阿倍野区":["天王寺駅","阿倍野駅","昭和町駅","文の里駅"],
+      "住之江区":["住之江公園駅","北加賀屋駅"],
+      "住吉区":["あびこ駅","長居駅","杉本町駅"],
+      "東住吉区":["駒川中野駅","針中野駅","南田辺駅"],
+      "平野区":["平野駅","喜連瓜破駅","出戸駅"],
+      "西成区":["天下茶屋駅","岸里駅","花園町駅"]
+    };
+
     function rebuildWardOptions(){
-      const wards = [...new Set(offices.map(o => o.ward))].sort((a,b)=>a.localeCompare(b,"ja"));
+      const wards = [...new Set(offices.map(o => o.ward).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ja"));
       const current = wardSelect.value || "all";
       wardSelect.innerHTML = '<option value="all">全区</option>';
       wards.forEach(ward => {
@@ -352,9 +446,8 @@
         option.textContent = ward;
         wardSelect.appendChild(option);
       });
-      if([...wardSelect.options].some(o => o.value === current)) wardSelect.value = current;
+      if ([...wardSelect.options].some(o => o.value === current)) wardSelect.value = current;
     }
-    rebuildWardOptions();
 
     const map = L.map("map").setView([34.6937, 135.5023], 11);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -367,7 +460,7 @@
     let userMarker = null;
     let searchMarker = null;
     let routeLine = null;
-    let currentRenderedData = [...offices];
+    let currentRenderedData = [];
 
     function normalizeText(text){
       return String(text || "")
@@ -386,7 +479,7 @@
     }
 
     function safeId(text){
-      return text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\u3040-\u30ff\u3400-\u9fff-]/g, "").slice(0, 50) || ("office-" + Date.now());
+      return text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\u3040-\u30ff\u3400-\u9fff-]/g, "").slice(0, 80) || ("office-" + Date.now());
     }
 
     function todayStr(){
@@ -422,6 +515,7 @@
     function googleMapsWalkingUrl(address){
       return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}&travelmode=walking`;
     }
+
     function googleMapsTransitUrl(address){
       return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}&travelmode=transit`;
     }
@@ -458,6 +552,7 @@
       const remaining = total - visited;
       const called = data.filter(o => getSalesStatus(o.id) === "電話した").length;
       const hot = data.filter(o => getSalesStatus(o.id) === "見込みあり").length;
+
       totalCountEl.textContent = `全件: ${total}`;
       todayCountEl.textContent = `今日予定: ${today}`;
       visitedCountEl.textContent = `訪問済み: ${visited}`;
@@ -531,6 +626,8 @@
         const salesStatus = getSalesStatus(office.id);
         const callTime = getCallTime(office.id);
 
+        const badgePending = office.needsGeocode ? '<span class="badge pending">座標取得待ち</span>' : '';
+
         const item = document.createElement("div");
         item.className = "card" + (visited ? " visited" : "") + (today ? " today" : "");
 
@@ -560,6 +657,7 @@
           <div class="badge-row">
             <span class="badge">${office.type}</span>
             <span class="badge ${statusClass(salesStatus)}">${salesStatus}</span>
+            ${badgePending}
             ${today ? '<span class="badge todaybadge">今日回る先</span>' : ""}
             ${visited ? '<span class="badge done">訪問済み</span>' : ""}
           </div>
@@ -670,7 +768,7 @@
       });
 
       if(linePoints.length >= 2){
-        routeLine = L.polyline(linePoints, { weight:4, opacity:0.7 }).addTo(map);
+        routeLine = L.polyline(linePoints, { weight: 4, opacity: 0.7 }).addTo(map);
       }
 
       updateSummary(data);
@@ -748,7 +846,7 @@
           setStatus("現在地を取得できませんでした。");
           alert("現在地を取得できませんでした。");
         },
-        { enableHighAccuracy:true, timeout:10000, maximumAge:0 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     }
 
@@ -854,7 +952,6 @@
         alert("すべて訪問済みです。");
         return;
       }
-
       const office = data[nextIndex];
       map.setView([office.lat, office.lng], 16);
       const card = listEl.children[nextIndex];
@@ -931,6 +1028,7 @@
       const rows = [[
         "区名","種別","事業所名","住所","電話","営業状態","訪問済み","今日予定","電話時刻","出典","確認日","検索補助語","メモ"
       ]];
+
       currentRenderedData.forEach(office => {
         rows.push([
           office.ward, office.type, office.name, office.address, office.phone || "",
@@ -944,7 +1042,7 @@
       });
 
       const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
-      const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
       link.href = url;
@@ -965,6 +1063,7 @@
         const cols = line.split(",").map(v => v.trim());
         if(index === 0 && cols[0] === "区名") return;
         if(cols.length < 10) return;
+
         const [ward, type, name, address, phone, latStr, lngStr, source, checked, keywords] = cols;
         const lat = parseFloat(latStr);
         const lng = parseFloat(lngStr);
@@ -977,7 +1076,8 @@
           id, ward, type, name, address, phone, lat, lng,
           source: source || "CSV追加",
           checked: checked || todayStr(),
-          keywords: keywords || ""
+          keywords: keywords || "",
+          needsGeocode: false
         });
         count++;
       });
@@ -1000,19 +1100,19 @@
       const result = [];
       let cur = "";
       let inQuotes = false;
-      for(let i=0;i<line.length;i++){
+      for(let i = 0; i < line.length; i++){
         const ch = line[i];
         if(ch === '"'){
           if(inQuotes && line[i+1] === '"'){
             cur += '"';
             i++;
-          }else{
+          } else {
             inQuotes = !inQuotes;
           }
-        }else if(ch === "," && !inQuotes){
+        } else if(ch === "," && !inQuotes){
           result.push(cur);
           cur = "";
-        }else{
+        } else {
           cur += ch;
         }
       }
@@ -1020,88 +1120,141 @@
       return result.map(v => v.trim());
     }
 
-    async function loadOfficialKyotaku(){
-      setStatus("大阪府の公式CSVから居宅を読み込んでいます…");
-      try{
-        let imported = 0;
-        for(const url of OSAKA_PREF_OFFICIAL_CSVS){
-          const res = await fetch(url);
-          if(!res.ok) throw new Error(`読込失敗: ${url}`);
-          const text = await res.text();
-          imported += importOfficialKyotakuCsvText(text, url);
-        }
-        rebuildWardOptions();
-        renderListAndMap(offices);
-        setStatus(`公式CSVから ${imported} 件の大阪市内居宅を追加しました。`);
-      }catch(err){
-        console.error(err);
-        setStatus("公式CSVの直接読込に失敗しました。下のファイル選択で居宅サービス等1/2を読み込んでください。");
-        alert("公式CSVの直接読込に失敗しました。大阪府ページからCSVをダウンロードして、ファイル選択で読み込んでください。");
-      }
-    }
-
-    async function loadKyotakuFromFiles(event){
-      const files = Array.from(event.target.files || []);
-      if(files.length === 0) return;
-      let imported = 0;
-      for(const file of files){
-        const text = await file.text();
-        imported += importOfficialKyotakuCsvText(text, file.name);
-      }
-      rebuildWardOptions();
-      renderListAndMap(offices);
-      setStatus(`ファイルから ${imported} 件の大阪市内居宅を追加しました。`);
+    function wardFromAddress(address){
+      return OSAKA_WARDS.find(w => String(address || "").includes(w)) || "";
     }
 
     function looksLikeOsakaCity(address, ward){
-      const a = normalizeText(address);
-      const w = normalizeText(ward);
-      return a.includes("大阪市") || /区$/.test(ward || "") || [
-        "北区","都島区","福島区","此花区","中央区","西区","港区","大正区","天王寺区","浪速区",
-        "西淀川区","淀川区","東淀川区","東成区","生野区","旭区","城東区","鶴見区","阿倍野区",
-        "住之江区","住吉区","東住吉区","平野区","西成区"
-      ].includes(ward) || w.includes("区");
+      if (OSAKA_WARDS.includes(ward)) return true;
+      return OSAKA_WARDS.some(w => String(address || "").includes(`大阪市${w}`) || String(address || "").includes(w));
     }
 
-    function wardFromAddress(address){
-      const wards = ["北区","都島区","福島区","此花区","中央区","西区","港区","大正区","天王寺区","浪速区",
-        "西淀川区","淀川区","東淀川区","東成区","生野区","旭区","城東区","鶴見区","阿倍野区",
-        "住之江区","住吉区","東住吉区","平野区","西成区"];
-      return wards.find(w => address.includes(w)) || "";
+    function buildKeywords(ward, name){
+      return [ward, name, ...(WARD_STATIONS[ward] || [])].join(" ");
     }
 
-    function buildKeywords(ward, name, address){
-      const extra = [];
-      const text = `${ward} ${name} ${address}`;
-      const stationMap = {
-        "中央区":["本町駅","堺筋本町駅","谷町四丁目駅","谷町六丁目駅","北浜駅","天満橋駅"],
-        "北区":["梅田駅","大阪駅","中津駅","天神橋筋六丁目駅","扇町駅","南森町駅"],
-        "都島区":["都島駅","京橋駅","桜ノ宮駅","野江内代駅"],
-        "福島区":["福島駅","新福島駅","海老江駅","野田駅","野田阪神駅"],
-        "此花区":["西九条駅","千鳥橋駅","伝法駅","安治川口駅"],
-        "西区":["西長堀駅","阿波座駅","西大橋駅","四ツ橋駅"],
-        "港区":["弁天町駅","朝潮橋駅","大阪港駅"],
-        "大正区":["大正駅"],
-        "天王寺区":["天王寺駅","谷町九丁目駅","桃谷駅","四天王寺前夕陽ヶ丘駅"],
-        "浪速区":["なんば駅","難波駅","大国町駅","恵美須町駅","新今宮駅"],
-        "西淀川区":["御幣島駅","福駅","塚本駅"],
-        "淀川区":["新大阪駅","十三駅","三国駅","東三国駅"],
-        "東淀川区":["淡路駅","上新庄駅","井高野駅","瑞光四丁目駅"],
-        "東成区":["今里駅","玉造駅","新深江駅","森ノ宮駅"],
-        "生野区":["桃谷駅","小路駅","北巽駅","南巽駅"],
-        "旭区":["関目高殿駅","千林大宮駅","城北公園通駅"],
-        "城東区":["京橋駅","蒲生四丁目駅","野江駅","今福鶴見駅"],
-        "鶴見区":["横堤駅","今福鶴見駅"],
-        "阿倍野区":["天王寺駅","阿倍野駅","昭和町駅","文の里駅"],
-        "住之江区":["住之江公園駅","北加賀屋駅"],
-        "住吉区":["あびこ駅","長居駅","杉本町駅"],
-        "東住吉区":["駒川中野駅","針中野駅","南田辺駅"],
-        "平野区":["平野駅","喜連瓜破駅","出戸駅"],
-        "西成区":["天下茶屋駅","岸里駅","花園町駅"]
-      };
-      const wardStations = stationMap[ward] || [];
-      extra.push(...wardStations);
-      return [ward, name, ...extra].join(" ");
+    function getGeocodeCacheKey(address){
+      return `geo_cache_${normalizeText(address)}`;
+    }
+
+    function getCachedGeocode(address){
+      try{
+        const raw = localStorage.getItem(getGeocodeCacheKey(address));
+        return raw ? JSON.parse(raw) : null;
+      }catch(e){
+        return null;
+      }
+    }
+
+    function setCachedGeocode(address, lat, lng){
+      try{
+        localStorage.setItem(getGeocodeCacheKey(address), JSON.stringify({ lat, lng }));
+      }catch(e){}
+    }
+
+    function clearGeocodeCache(){
+      const keys = [];
+      for(let i = 0; i < localStorage.length; i++){
+        const key = localStorage.key(i);
+        if(key && key.startsWith("geo_cache_")) keys.push(key);
+      }
+      keys.forEach(k => localStorage.removeItem(k));
+      alert("座標キャッシュを削除しました。");
+    }
+
+    function sleep(ms){
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function geocodeAddressNominatim(address){
+      const cached = getCachedGeocode(address);
+      if(cached && Number.isFinite(cached.lat) && Number.isFinite(cached.lng)) return cached;
+
+      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=ja&q=${encodeURIComponent(address)}`;
+      const res = await fetch(url, { cache: "no-store" });
+      if(!res.ok) return null;
+      const data = await res.json();
+      if(!Array.isArray(data) || data.length === 0) return null;
+
+      const lat = parseFloat(data[0].lat);
+      const lng = parseFloat(data[0].lon);
+      if(Number.isNaN(lat) || Number.isNaN(lng)) return null;
+
+      setCachedGeocode(address, lat, lng);
+      return { lat, lng };
+    }
+
+    async function geocodePendingCityOffices(){
+      const pending = offices.filter(o => o.needsGeocode);
+      if(pending.length === 0) return;
+
+      for(let i = 0; i < pending.length; i++){
+        const office = pending[i];
+        setStatus(`住所から座標を取得中… ${i + 1}/${pending.length}<br>${office.name}`);
+
+        const result = await geocodeAddressNominatim(office.address);
+        if(result){
+          office.lat = result.lat;
+          office.lng = result.lng;
+          office.needsGeocode = false;
+        }
+        renderListAndMap(getFilteredData().length ? getFilteredData() : offices);
+        await sleep(1100);
+      }
+      setStatus("住所からの座標取得が完了しました。");
+    }
+
+    function importOsakaCityCsvText(text){
+      const lines = text.split(/\r?\n/).filter(Boolean);
+      if(lines.length < 2) return 0;
+
+      let imported = 0;
+      for(let i = 1; i < lines.length; i++){
+        const cols = parseCsvLine(lines[i]);
+        if(cols.length < 14) continue;
+
+        const typeRaw = cols[0] || "";
+        const ward = cols[10] || "";
+        const name = cols[11] || "";
+        const address = cols[12] || "";
+        const phone = cols[13] || "";
+
+        if(!name || !address) continue;
+
+        let type = "";
+        if(normalizeText(typeRaw).includes(normalizeText("地域包括支援センター"))){
+          type = "地域包括支援センター";
+        } else if(
+          normalizeText(typeRaw).includes(normalizeText("総合相談窓口")) ||
+          normalizeText(name).includes(normalizeText("ブランチ"))
+        ){
+          type = "総合相談窓口（ブランチ）";
+        } else {
+          continue;
+        }
+
+        const id = safeId(`${ward}-${name}-${phone}-${type}`);
+        if(offices.some(o => o.id === id)) continue;
+
+        const cached = getCachedGeocode(address);
+
+        offices.push({
+          id,
+          ward: ward || wardFromAddress(address) || "",
+          type,
+          name,
+          address,
+          phone,
+          lat: cached?.lat ?? 34.6937,
+          lng: cached?.lng ?? 135.5023,
+          source: "大阪市 地域包括・ブランチ一覧CSV",
+          checked: "2026-04-10",
+          keywords: buildKeywords(ward || wardFromAddress(address) || "", name),
+          needsGeocode: !(cached && Number.isFinite(cached.lat) && Number.isFinite(cached.lng))
+        });
+        imported++;
+      }
+      return imported;
     }
 
     function importOfficialKyotakuCsvText(text, sourceLabel){
@@ -1109,18 +1262,18 @@
       if(lines.length < 2) return 0;
 
       const headers = parseCsvLine(lines[0]);
-      const serviceNameIdx = guessColumnIndex(headers, ["サービス種類名称","サービス種類","介護給付費算定体制等情報_サービス種類名称"]);
+      const serviceNameIdx = guessColumnIndex(headers, ["サービス種類名称","サービス種類"]);
       const officeNameIdx = guessColumnIndex(headers, ["事業所名称","施設名称"]);
       const addressIdx = guessColumnIndex(headers, ["事業所所在地","住所"]);
       const phoneIdx = guessColumnIndex(headers, ["事業所電話番号","電話番号"]);
       const latIdx = guessColumnIndex(headers, ["緯度"]);
       const lngIdx = guessColumnIndex(headers, ["経度"]);
-      const wardIdx = guessColumnIndex(headers, ["区市町村","市区町村","保険者名","行政区"]);
+      const wardIdx = guessColumnIndex(headers, ["区市町村","市区町村","行政区","保険者名"]);
       const updatedIdx = guessColumnIndex(headers, ["異動年月日","更新年月日","指定年月日"]);
 
       let imported = 0;
 
-      for(let i=1; i<lines.length; i++){
+      for(let i = 1; i < lines.length; i++){
         const cols = parseCsvLine(lines[i]);
         const serviceName = cols[serviceNameIdx] || "";
         if(!normalizeText(serviceName).includes(normalizeText("居宅介護支援"))) continue;
@@ -1153,11 +1306,64 @@
           lng,
           source: `大阪府 介護保険事業所台帳情報 (${sourceLabel})`,
           checked,
-          keywords: buildKeywords(ward || "大阪市", name, address)
+          keywords: buildKeywords(ward || "大阪市", name),
+          needsGeocode: false
         });
         imported++;
       }
       return imported;
+    }
+
+    async function loadOsakaCityData(){
+      const cityRes = await fetch(OSAKA_CITY_OFFICIAL_CSV, { cache: "no-store" });
+      if(!cityRes.ok) throw new Error("大阪市CSVの読込に失敗しました。");
+      return importOsakaCityCsvText(await cityRes.text());
+    }
+
+    async function loadKyotakuData(){
+      let importedKyotaku = 0;
+      for(const url of OSAKA_PREF_OFFICIAL_CSVS){
+        const res = await fetch(url, { cache: "no-store" });
+        if(!res.ok) throw new Error(`大阪府CSVの読込に失敗しました: ${url}`);
+        importedKyotaku += importOfficialKyotakuCsvText(await res.text(), url);
+      }
+      return importedKyotaku;
+    }
+
+    async function loadAllOfficialData(reset = false){
+      setStatus("大阪市と大阪府の公式CSVを自動読込しています…");
+      try{
+        if(reset) offices.length = 0;
+        else offices.length = 0;
+
+        const importedCity = await loadOsakaCityData();
+        const importedKyotaku = await loadKyotakuData();
+
+        rebuildWardOptions();
+        renderListAndMap(offices);
+        setStatus(`自動読込完了：地域包括・ブランチ ${importedCity} 件、居宅 ${importedKyotaku} 件 追加しました。`);
+
+        await geocodePendingCityOffices();
+        renderListAndMap(offices);
+      }catch(err){
+        console.error(err);
+        setStatus("自動読込に失敗しました。下のファイル選択または手動CSV追加を使ってください。");
+      }
+    }
+
+    async function loadKyotakuFromFiles(event){
+      const files = Array.from(event.target.files || []);
+      if(files.length === 0) return;
+
+      let imported = 0;
+      for(const file of files){
+        const text = await file.text();
+        imported += importOfficialKyotakuCsvText(text, file.name);
+      }
+
+      rebuildWardOptions();
+      renderListAndMap(offices);
+      setStatus(`ファイルから ${imported} 件の大阪市内居宅を追加しました。`);
     }
 
     renderListAndMap(offices);
@@ -1165,6 +1371,14 @@
       map.invalidateSize();
       fitVisibleMarkers();
     }, 400);
+
+    window.addEventListener("load", async () => {
+      try {
+        await loadAllOfficialData();
+      } catch (e) {
+        console.error(e);
+      }
+    });
   </script>
 </body>
 </html>
