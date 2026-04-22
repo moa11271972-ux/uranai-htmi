@@ -3,106 +3,288 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>営業アプリ｜読み込み修正版</title>
+  <title>営業アプリ｜CSV読込完全版</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; }
-    body { margin:0; font-family:"Hiragino Sans","Yu Gothic","Meiryo",sans-serif; background:#f4f7fb; color:#222; }
-    header { background:linear-gradient(135deg,#2146d0,#4f7cff); color:#fff; padding:16px; text-align:center; font-size:22px; font-weight:700; }
-    .wrap { max-width:1680px; margin:0 auto; padding:14px; }
-    .box,.panel { background:#fff; border-radius:16px; box-shadow:0 8px 22px rgba(0,0,0,.08); margin-bottom:14px; }
-    .box { padding:12px; }
-    .panel { overflow:hidden; }
-    .panel-title { padding:14px 16px; font-weight:700; border-bottom:1px solid #eef1f7; background:#fafcff; }
-    .notice { background:#fff8e8; border:1px solid #f3d38f; color:#6c4d00; border-radius:12px; padding:12px; line-height:1.8; font-size:13px; }
-    .row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
-    select,input,button,textarea {
-      border:1px solid #dbe3f2; border-radius:12px; padding:12px; font-size:14px; background:#fff;
+    body {
+      margin: 0;
+      font-family: "Hiragino Sans","Yu Gothic","Meiryo",sans-serif;
+      background: #f4f7fb;
+      color: #222;
     }
-    input { min-width:150px; }
-    button { border:none; background:#2146d0; color:#fff; cursor:pointer; white-space:nowrap; }
-    button:hover { opacity:.92; }
-    .green-btn { background:#16a34a; }
-    .orange-btn { background:#f97316; }
-    .red-btn { background:#c51616; }
-    .purple-btn { background:#7a34c2; }
+    header {
+      background: linear-gradient(135deg,#2146d0,#4f7cff);
+      color: #fff;
+      padding: 16px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .wrap {
+      max-width: 1680px;
+      margin: 0 auto;
+      padding: 14px;
+    }
+    .box, .panel {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 22px rgba(0,0,0,.08);
+      margin-bottom: 14px;
+    }
+    .box { padding: 12px; }
+    .panel { overflow: hidden; }
+    .panel-title {
+      padding: 14px 16px;
+      font-weight: 700;
+      border-bottom: 1px solid #eef1f7;
+      background: #fafcff;
+    }
+    .notice {
+      background: #fff8e8;
+      border: 1px solid #f3d38f;
+      color: #6c4d00;
+      border-radius: 12px;
+      padding: 12px;
+      line-height: 1.8;
+      font-size: 13px;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    select, input, button, textarea {
+      border: 1px solid #dbe3f2;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      background: #fff;
+    }
+    input { min-width: 150px; }
+    button {
+      border: none;
+      background: #2146d0;
+      color: #fff;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    button:hover { opacity: .92; }
+    .green-btn { background: #16a34a; }
+    .orange-btn { background: #f97316; }
+    .red-btn { background: #c51616; }
+    .purple-btn { background: #7a34c2; }
+    .gray-btn { background: #7d8aa5; }
 
     .status-box {
-      margin-top:10px; padding:10px 12px; background:#f7faff; border:1px solid #e1e9fb;
-      border-radius:12px; font-size:13px; color:#3b4d6b; line-height:1.7;
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: #f7faff;
+      border: 1px solid #e1e9fb;
+      border-radius: 12px;
+      font-size: 13px;
+      color: #3b4d6b;
+      line-height: 1.7;
     }
-    .chips { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
-    .chip { background:#eef3ff; color:#2146d0; padding:8px 12px; border-radius:999px; font-size:13px; font-weight:700; }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .chip {
+      background: #eef3ff;
+      color: #2146d0;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+    }
 
-    .layout { display:grid; grid-template-columns:560px 1fr; gap:14px; }
-    .list { height:78vh; overflow:auto; }
-    .card { padding:14px 16px; border-bottom:1px solid #eef1f7; cursor:pointer; transition:.2s; background:#fff; }
-    .card:hover { background:#f5f8ff; }
-    .card.active { background:#eaf0ff; border-left:5px solid #2146d0; }
-    .card.visited { background:#f2f9f2; }
-    .card.today { box-shadow:inset 0 0 0 2px #7a34c2; }
+    .layout {
+      display: grid;
+      grid-template-columns: 560px 1fr;
+      gap: 14px;
+    }
+    .list {
+      height: 78vh;
+      overflow: auto;
+    }
+    .card {
+      padding: 14px 16px;
+      border-bottom: 1px solid #eef1f7;
+      cursor: pointer;
+      transition: .2s;
+      background: #fff;
+    }
+    .card:hover { background: #f5f8ff; }
+    .card.active {
+      background: #eaf0ff;
+      border-left: 5px solid #2146d0;
+    }
+    .card.visited { background: #f2f9f2; }
+    .card.today { box-shadow: inset 0 0 0 2px #7a34c2; }
 
-    .topline { display:flex; gap:10px; justify-content:space-between; align-items:flex-start; }
+    .topline {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
     .order-badge {
-      width:34px; height:34px; border-radius:999px; display:flex; align-items:center; justify-content:center;
-      background:#2146d0; color:#fff; font-weight:700; flex-shrink:0;
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #2146d0;
+      color: #fff;
+      font-weight: 700;
+      flex-shrink: 0;
     }
-    .name { font-weight:700; line-height:1.5; margin-bottom:6px; }
-    .meta { font-size:13px; color:#536076; line-height:1.7; margin-top:6px; }
-    .distance { margin-top:8px; font-size:13px; color:#2146d0; font-weight:700; }
+    .name {
+      font-weight: 700;
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+    .meta {
+      font-size: 13px;
+      color: #536076;
+      line-height: 1.7;
+      margin-top: 6px;
+    }
+    .distance {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #2146d0;
+      font-weight: 700;
+    }
     .source {
-      margin-top:8px; font-size:12px; line-height:1.6; color:#5f6b7d;
-      background:#f8fbff; border:1px solid #e6eefc; border-radius:10px; padding:8px 10px;
+      margin-top: 8px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #5f6b7d;
+      background: #f8fbff;
+      border: 1px solid #e6eefc;
+      border-radius: 10px;
+      padding: 8px 10px;
     }
-    .badge-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
-    .badge { font-size:12px; padding:4px 8px; border-radius:999px; background:#eef3ff; color:#2146d0; }
-    .badge.called { background:#e8f0ff; color:#1f5ed8; }
-    .badge.absent { background:#fff3e8; color:#c46b00; }
-    .badge.revisit { background:#f6ebff; color:#7a34c2; }
-    .badge.hot { background:#e9f9ef; color:#138548; }
-    .badge.contract { background:#eaf7ff; color:#0070a8; }
-    .badge.done { background:#e8f6e8; color:#208340; }
-    .badge.todaybadge { background:#f4eaff; color:#7a34c2; }
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .badge {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #eef3ff;
+      color: #2146d0;
+    }
+    .badge.called { background: #e8f0ff; color: #1f5ed8; }
+    .badge.absent { background: #fff3e8; color: #c46b00; }
+    .badge.revisit { background: #f6ebff; color: #7a34c2; }
+    .badge.hot { background: #e9f9ef; color: #138548; }
+    .badge.contract { background: #eaf7ff; color: #0070a8; }
+    .badge.done { background: #e8f6e8; color: #208340; }
+    .badge.todaybadge { background: #f4eaff; color: #7a34c2; }
 
-    .action-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center; }
-    .small-btn { padding:8px 10px; font-size:12px; border-radius:10px; background:#4f7cff; color:#fff; text-decoration:none; display:inline-block; }
-    .small-btn.green { background:#16a34a; }
-    .small-btn.orange { background:#f97316; }
-    .small-btn.gray { background:#7d8aa5; }
-    .small-btn.purple { background:#8b5cf6; }
-    .small-btn.teal { background:#0f9fb8; }
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      align-items: center;
+    }
+    .small-btn {
+      padding: 8px 10px;
+      font-size: 12px;
+      border-radius: 10px;
+      background: #4f7cff;
+      color: #fff;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .small-btn.green { background: #16a34a; }
+    .small-btn.orange { background: #f97316; }
+    .small-btn.gray { background: #7d8aa5; }
+    .small-btn.purple { background: #8b5cf6; }
+    .small-btn.teal { background: #0f9fb8; }
 
-    .visit-check { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:700; color:#2c4b85; }
-    .memo-box { width:100%; min-height:72px; margin-top:10px; resize:vertical; font-size:13px; line-height:1.5; }
-    #map { width:100%; height:78vh; min-height:520px; background:#d8dde8; }
-    .subgrid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-    .big-text { width:100%; min-height:220px; resize:vertical; font-size:13px; line-height:1.6; }
-    .footer { font-size:12px; color:#5f6b7d; line-height:1.8; }
-    a.tel-link { color:#2146d0; text-decoration:none; font-weight:700; }
+    .visit-check {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #2c4b85;
+    }
+    .memo-box {
+      width: 100%;
+      min-height: 72px;
+      margin-top: 10px;
+      resize: vertical;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    #map {
+      width: 100%;
+      height: 78vh;
+      min-height: 520px;
+      background: #d8dde8;
+    }
+    .subgrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .big-text {
+      width: 100%;
+      min-height: 220px;
+      resize: vertical;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .footer {
+      font-size: 12px;
+      color: #5f6b7d;
+      line-height: 1.8;
+    }
+    a.tel-link {
+      color: #2146d0;
+      text-decoration: none;
+      font-weight: 700;
+    }
 
-    @media (max-width:1100px) {
-      .layout { grid-template-columns:1fr; }
-      .list { height:420px; }
-      #map { height:58vh; min-height:380px; }
-      .subgrid { grid-template-columns:1fr; }
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+      .list { height: 420px; }
+      #map { height: 58vh; min-height: 380px; }
+      .subgrid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <header>営業アプリ｜読み込み修正版</header>
+  <header>営業アプリ｜CSV読込完全版</header>
 
   <div class="wrap">
     <div class="box">
       <div class="notice">
-        読み込みできなかった原因に対応した版です。<br>
-        UTF-8 と Shift-JIS/CP932 の両方のCSVを読めます。<br>
-        <strong>houmonnkaigo.csv</strong> と <strong>202603kyotaku01.csv / 202603kyotaku02.csv</strong> をそのまま選べます。
+        これは <strong>CSVを選ぶだけで読み込める版</strong>です。<br>
+        <strong>202603kyotaku01.csv / 202603kyotaku02.csv / houmonnkaigo.csv</strong> を読み込めます。<br>
+        Shift-JIS と UTF-8 の両方に対応しています。
       </div>
     </div>
 
     <div class="box">
       <div class="row">
-        <select id="wardFilter"><option value="all">全区</option></select>
+        <select id="wardFilter">
+          <option value="all">全区</option>
+        </select>
+
         <select id="typeFilter">
           <option value="all">全種別</option>
           <option value="地域包括支援センター">地域包括支援センター</option>
@@ -110,6 +292,7 @@
           <option value="居宅介護支援事業所">居宅介護支援事業所</option>
           <option value="訪問介護">訪問介護</option>
         </select>
+
         <select id="salesStatusFilter">
           <option value="all">全営業状態</option>
           <option value="未対応">未対応</option>
@@ -119,6 +302,7 @@
           <option value="見込みあり">見込みあり</option>
           <option value="契約候補">契約候補</option>
         </select>
+
         <select id="todayFilter">
           <option value="all">今日の予定 全て</option>
           <option value="today">今日回る先のみ</option>
@@ -139,7 +323,6 @@
       </div>
 
       <div class="row" style="margin-top:10px;">
-        <button class="green-btn" onclick="loadCityCsv()">地域包括・ブランチ読込</button>
         <input id="uploadKyotaku" type="file" accept=".csv,text/csv" multiple onchange="loadSelectedCsvs(event)" />
       </div>
 
@@ -160,6 +343,7 @@
         <div class="panel-title">営業先リスト</div>
         <div id="list" class="list"></div>
       </div>
+
       <div class="panel">
         <div class="panel-title">地図</div>
         <div id="map"></div>
@@ -176,6 +360,7 @@
           <button class="purple-btn" onclick="importSimpleCSV()">CSV追加</button>
         </div>
       </div>
+
       <div class="box">
         <div class="panel-title" style="margin:-12px -12px 12px -12px; border-radius:16px 16px 0 0;">本日の営業日報</div>
         <textarea id="dailyReport" class="big-text"></textarea>
@@ -185,7 +370,6 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    const OSAKA_CITY_OFFICIAL_CSV = "https://www.city.osaka.lg.jp/fukushi/cmsfiles/contents/0000370/370519/6csv.csv";
     const offices = [];
 
     const OSAKA_WARDS = [
@@ -238,32 +422,6 @@
     const calledCountEl = document.getElementById("calledCount");
     const hotCountEl = document.getElementById("hotCount");
 
-    function rebuildWardOptions(){
-      const wards = [...new Set(offices.map(o => o.ward).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ja"));
-      const current = wardSelect.value || "all";
-      wardSelect.innerHTML = '<option value="all">全区</option>';
-      wards.forEach(ward => {
-        const option = document.createElement("option");
-        option.value = ward;
-        option.textContent = ward;
-        wardSelect.appendChild(option);
-      });
-      if ([...wardSelect.options].some(o => o.value === current)) wardSelect.value = current;
-    }
-
-    const map = L.map("map").setView([34.6937, 135.5023], 11);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap contributors"
-    }).addTo(map);
-
-    let markers = [];
-    let visibleMarkers = [];
-    let currentPosition = null;
-    let userMarker = null;
-    let searchMarker = null;
-    let routeLine = null;
-    let currentRenderedData = [];
-
     function normalizeText(text){
       return String(text || "")
         .toLowerCase()
@@ -284,6 +442,14 @@
       return text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\u3040-\u30ff\u3400-\u9fff-]/g, "").slice(0, 80) || ("office-" + Date.now());
     }
 
+    function wardFromAddress(address){
+      return OSAKA_WARDS.find(w => String(address || "").includes(w)) || "";
+    }
+
+    function buildKeywords(ward, name){
+      return [ward, name, ...(WARD_STATIONS[ward] || [])].join(" ");
+    }
+
     function todayStr(){
       const d = new Date();
       return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -292,14 +458,6 @@
     function nowTimeStr(){
       const d = new Date();
       return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
-    }
-
-    function wardFromAddress(address){
-      return OSAKA_WARDS.find(w => String(address || "").includes(w)) || "";
-    }
-
-    function buildKeywords(ward, name){
-      return [ward, name, ...(WARD_STATIONS[ward] || [])].join(" ");
     }
 
     function setStatus(text){ statusBox.innerHTML = text; }
@@ -326,6 +484,7 @@
     function googleMapsWalkingUrl(address){
       return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}&travelmode=walking`;
     }
+
     function googleMapsTransitUrl(address){
       return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}&travelmode=transit`;
     }
@@ -350,6 +509,32 @@
       if(km < 1) return `${Math.round(km * 1000)}m`;
       return `${km.toFixed(2)}km`;
     }
+
+    function rebuildWardOptions(){
+      const wards = [...new Set(offices.map(o => o.ward).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ja"));
+      const current = wardSelect.value || "all";
+      wardSelect.innerHTML = '<option value="all">全区</option>';
+      wards.forEach(ward => {
+        const option = document.createElement("option");
+        option.value = ward;
+        option.textContent = ward;
+        wardSelect.appendChild(option);
+      });
+      if ([...wardSelect.options].some(o => o.value === current)) wardSelect.value = current;
+    }
+
+    const map = L.map("map").setView([34.6937, 135.5023], 11);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map);
+
+    let markers = [];
+    let visibleMarkers = [];
+    let currentPosition = null;
+    let userMarker = null;
+    let searchMarker = null;
+    let routeLine = null;
+    let currentRenderedData = [];
 
     function getFilteredData(){
       const ward = wardSelect.value;
@@ -486,14 +671,7 @@
           weight: 2
         }).addTo(map);
 
-        marker.bindPopup(`
-          <b>${index + 1}. ${office.name}</b><br>
-          ${office.ward}<br>
-          ${office.type}<br>
-          ${office.address}<br>
-          <a href="tel:${String(office.phone || "").replace(/-/g, "")}">${office.phone || ""}</a>
-        `);
-
+        marker.bindPopup(`<b>${index + 1}. ${office.name}</b><br>${office.ward}<br>${office.type}<br>${office.address}`);
         markers.push(marker);
         visibleMarkers.push(marker);
         linePoints.push([office.lat, office.lng]);
@@ -506,7 +684,6 @@
             e.target.classList.contains("next-btn") ||
             e.target.classList.contains("auto-call-link")
           ) return;
-
           document.querySelectorAll(".card").forEach(c => c.classList.remove("active"));
           item.classList.add("active");
           map.setView([office.lat, office.lng], 16);
@@ -535,11 +712,6 @@
         item.querySelector(".next-btn").addEventListener("click", (e) => {
           e.stopPropagation();
           jumpToNextUnvisited(index + 1);
-        });
-        item.querySelector(".auto-call-link").addEventListener("click", () => {
-          setSalesStatus(office.id, "電話した");
-          setCallTime(office.id, nowTimeStr());
-          renderListAndMap(currentRenderedData);
         });
       });
 
@@ -581,9 +753,8 @@
         alert("この端末では現在地取得に対応していません。");
         return;
       }
-      setStatus("現在地を取得しています…");
       navigator.geolocation.getCurrentPosition(
-        async (pos) => {
+        (pos) => {
           currentPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
           if(userMarker) map.removeLayer(userMarker);
           if(searchMarker){ map.removeLayer(searchMarker); searchMarker = null; }
@@ -591,9 +762,7 @@
           map.setView([currentPosition.lat, currentPosition.lng], 15);
           setStatus("現在地を取得しました。");
         },
-        () => {
-          setStatus("現在地を取得できませんでした。");
-        },
+        () => setStatus("現在地を取得できませんでした。"),
         { enableHighAccuracy:true, timeout:10000, maximumAge:0 }
       );
     }
@@ -614,15 +783,13 @@
         }
         const result = data[0];
         currentPosition = { lat: parseFloat(result.lat), lng: parseFloat(result.lon) };
-
         if(searchMarker) map.removeLayer(searchMarker);
         if(userMarker){ map.removeLayer(userMarker); userMarker = null; }
-
-        searchMarker = L.marker([currentPosition.lat, currentPosition.lng]).addTo(map).bindPopup(`検索地点<br>${result.display_name}`).openPopup();
+        searchMarker = L.marker([currentPosition.lat, currentPosition.lng]).addTo(map).bindPopup(result.display_name).openPopup();
         map.setView([currentPosition.lat, currentPosition.lng], 15);
         setStatus(`検索地点を表示しました。<br>${result.display_name}`);
       }catch(e){
-        alert("場所検索に失敗しました。");
+        setStatus("場所検索に失敗しました。");
       }
     }
 
@@ -732,10 +899,11 @@
       const result = [];
       let cur = "";
       let inQuotes = false;
+
       for(let i = 0; i < line.length; i++){
         const ch = line[i];
         if(ch === '"'){
-          if(inQuotes && line[i+1] === '"'){
+          if(inQuotes && line[i + 1] === '"'){
             cur += '"';
             i++;
           } else {
@@ -756,77 +924,50 @@
       const buffer = await file.arrayBuffer();
       const bytes = new Uint8Array(buffer);
 
-      try{
-        const utf8Text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-        return utf8Text;
-      }catch(e){}
+      try {
+        return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+      } catch(e) {}
 
-      try{
-        const sjisText = new TextDecoder("shift-jis").decode(bytes);
-        return sjisText;
-      }catch(e){}
+      try {
+        return new TextDecoder("shift-jis").decode(bytes);
+      } catch(e) {}
 
       return new TextDecoder("utf-8").decode(bytes);
     }
 
-    async function loadCityCsv(){
-      setStatus("大阪市の地域包括・ブランチを読み込んでいます…");
-      try{
-        const res = await fetch(OSAKA_CITY_OFFICIAL_CSV, { cache: "no-store" });
-        const text = await res.text();
-        let imported = 0;
-        const lines = text.split(/\r?\n/).filter(Boolean);
-
-        for(let i = 1; i < lines.length; i++){
-          const cols = parseCsvLine(lines[i]);
-          if(cols.length < 14) continue;
-
-          const typeRaw = cols[0] || "";
-          const ward = cols[10] || "";
-          const name = cols[11] || "";
-          const address = cols[12] || "";
-          const phone = cols[13] || "";
-
-          if(!name || !address) continue;
-
-          let type = "";
-          if(normalizeText(typeRaw).includes(normalizeText("地域包括支援センター"))){
-            type = "地域包括支援センター";
-          } else if(
-            normalizeText(typeRaw).includes(normalizeText("総合相談窓口")) ||
-            normalizeText(name).includes(normalizeText("ブランチ"))
-          ){
-            type = "総合相談窓口（ブランチ）";
-          } else {
-            continue;
-          }
-
-          const id = safeId(`${ward}-${name}-${phone}-${type}`);
-          if(offices.some(o => o.id === id)) continue;
-
-          offices.push({
-            id,
-            ward: ward || wardFromAddress(address),
-            type,
-            name,
-            address,
-            phone,
-            lat: 34.6937,
-            lng: 135.5023,
-            source: "大阪市CSV",
-            checked: "2026-04-10",
-            keywords: buildKeywords(ward || wardFromAddress(address), name)
-          });
-          imported++;
-        }
-
-        rebuildWardOptions();
-        renderListAndMap(offices);
-        setStatus(`地域包括・ブランチを ${imported} 件読み込みました。`);
-      }catch(e){
-        console.error(e);
-        setStatus("大阪市CSVの読み込みに失敗しました。");
+    function findHeaderIndex(headers, candidates){
+      const nh = headers.map(h => normalizeText(h));
+      for(const c of candidates){
+        const target = normalizeText(c);
+        const idx = nh.findIndex(h => h.includes(target));
+        if(idx !== -1) return idx;
       }
+      return -1;
+    }
+
+    function addOfficeRecord({ ward, type, name, address, phone, source, checked }){
+      if(!name || !address) return false;
+
+      const fixedWard = ward || wardFromAddress(address);
+      if(!fixedWard) return false;
+
+      const id = safeId(`${fixedWard}-${type}-${name}-${phone}-${address}`);
+      if(offices.some(o => o.id === id)) return false;
+
+      offices.push({
+        id,
+        ward: fixedWard,
+        type,
+        name,
+        address,
+        phone: phone || "",
+        lat: 34.6937,
+        lng: 135.5023,
+        source: source || "",
+        checked: checked || todayStr(),
+        keywords: buildKeywords(fixedWard, name)
+      });
+      return true;
     }
 
     async function loadSelectedCsvs(event){
@@ -836,97 +977,94 @@
         return;
       }
 
-      let imported = 0;
+      let importedTotal = 0;
+      const messages = [];
 
       for(const file of files){
-        const text = await decodeCsvFile(file);
-        const lines = text.split(/\r?\n/).filter(Boolean);
-        if(lines.length < 2) continue;
+        try{
+          const text = await decodeCsvFile(file);
+          const lines = text.split(/\r?\n/).filter(Boolean);
 
-        const header = parseCsvLine(lines[0]).join("|");
-
-        if(header.includes("事業所名称") && header.includes("所在地") && header.includes("電話番号")){
-          for(let i = 1; i < lines.length; i++){
-            const cols = parseCsvLine(lines[i]);
-            if(cols.length < 8) continue;
-
-            const jigyoshoNo = cols[0] || "";
-            const name = cols[1] || "";
-            const address = cols[3] || "";
-            const phone = cols[4] || "";
-            const checked = cols[6] || "";
-            const houjin = cols[7] || "";
-
-            if(!name || !address) continue;
-            const ward = wardFromAddress(address);
-            if(!ward) continue;
-
-            const id = safeId(`${ward}-${name}-${jigyoshoNo}`);
-            if(offices.some(o => o.id === id)) continue;
-
-            offices.push({
-              id,
-              ward,
-              type: "訪問介護",
-              name,
-              address,
-              phone,
-              lat: 34.6937,
-              lng: 135.5023,
-              source: `訪問介護CSV (${houjin || "法人名なし"})`,
-              checked: checked || todayStr(),
-              keywords: buildKeywords(ward, name)
-            });
-            imported++;
+          if(lines.length < 2){
+            messages.push(`${file.name}: データがありません`);
+            continue;
           }
-        } else if(header.includes("事業所_名称（漢字）") && header.includes("事業所_住所（漢字）") && header.includes("事業所_電話番号")){
-          const colsHeader = parseCsvLine(lines[0]);
-          const idxName = colsHeader.indexOf("事業所_名称（漢字）");
-          const idxAddr = colsHeader.indexOf("事業所_住所（漢字）");
-          const idxPhone = colsHeader.indexOf("事業所_電話番号");
-          const idxNo = colsHeader.indexOf("事業所番号");
-          const idxDate = colsHeader.indexOf("指定有効開始年月日");
-          const idxServiceCode = colsHeader.indexOf("サービス種別コード");
+
+          const headers = parseCsvLine(lines[0]);
+
+          const idxServiceCode = findHeaderIndex(headers, ["サービス種別コード"]);
+          const idxName = findHeaderIndex(headers, ["事業所_名称（漢字）", "事業所名称", "名称（漢字）"]);
+          const idxAddress = findHeaderIndex(headers, ["事業所_住所（漢字）", "事業所所在地", "住所（漢字）", "所在地"]);
+          const idxPhone = findHeaderIndex(headers, ["事業所_電話番号", "電話番号"]);
+          const idxStartDate = findHeaderIndex(headers, ["指定有効開始年月日", "指定日", "異動年月日"]);
+          const idxOfficeNo = findHeaderIndex(headers, ["事業所番号"]);
+          const idxHoujin = findHeaderIndex(headers, ["法人名称"]);
+
+          if(idxName === -1 || idxAddress === -1){
+            messages.push(`${file.name}: 必要な列が見つかりません`);
+            continue;
+          }
+
+          let fileImported = 0;
 
           for(let i = 1; i < lines.length; i++){
             const cols = parseCsvLine(lines[i]);
-            if(cols.length <= Math.max(idxName, idxAddr, idxPhone)) continue;
-
-            const name = cols[idxName] || "";
-            const address = cols[idxAddr] || "";
-            const phone = cols[idxPhone] || "";
-            const jigyoshoNo = cols[idxNo] || "";
-            const checked = cols[idxDate] || "";
-            const serviceCode = cols[idxServiceCode] || "";
+            const name = idxName !== -1 ? (cols[idxName] || "") : "";
+            const address = idxAddress !== -1 ? (cols[idxAddress] || "") : "";
+            const phone = idxPhone !== -1 ? (cols[idxPhone] || "") : "";
+            const checked = idxStartDate !== -1 ? (cols[idxStartDate] || "") : "";
+            const officeNo = idxOfficeNo !== -1 ? (cols[idxOfficeNo] || "") : "";
+            const houjin = idxHoujin !== -1 ? (cols[idxHoujin] || "") : "";
+            const serviceCode = idxServiceCode !== -1 ? (cols[idxServiceCode] || "") : "";
 
             if(!name || !address) continue;
+
             const ward = wardFromAddress(address);
             if(!ward) continue;
 
-            const id = safeId(`${ward}-${name}-${jigyoshoNo}-${serviceCode}`);
-            if(offices.some(o => o.id === id)) continue;
+            let type = "";
+            if(serviceCode === "43"){
+              type = "居宅介護支援事業所";
+            } else if(serviceCode === "11"){
+              type = "訪問介護";
+            } else if(normalizeText(file.name).includes("houmon")){
+              type = "訪問介護";
+            } else if(normalizeText(file.name).includes("kyotaku")){
+              type = "居宅介護支援事業所";
+            } else {
+              continue;
+            }
 
-            offices.push({
-              id,
+            const added = addOfficeRecord({
               ward,
-              type: "居宅介護支援事業所",
+              type,
               name,
               address,
               phone,
-              lat: 34.6937,
-              lng: 135.5023,
-              source: `居宅CSV (${file.name})`,
-              checked: checked || todayStr(),
-              keywords: buildKeywords(ward, name)
+              source: `${file.name} (${officeNo || houjin || serviceCode})`,
+              checked
             });
-            imported++;
+
+            if(added) fileImported++;
           }
+
+          importedTotal += fileImported;
+          messages.push(`${file.name}: ${fileImported}件追加`);
+        }catch(error){
+          console.error(error);
+          messages.push(`${file.name}: 読み込み失敗`);
         }
       }
 
       rebuildWardOptions();
       renderListAndMap(offices);
-      setStatus(`${imported}件 追加しました。`);
+
+      if(importedTotal === 0){
+        setStatus(`追加できませんでした。<br>${messages.join("<br>")}`);
+        alert("0件でした。青い表示欄のメッセージを見てください。");
+      } else {
+        setStatus(`読み込み完了<br>${messages.join("<br>")}`);
+      }
     }
 
     function importSimpleCSV(){
