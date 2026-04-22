@@ -3,287 +3,87 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>営業アプリ｜CSV読込完全版</title>
+  <title>営業アプリ｜地域包括あり完全版</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: "Hiragino Sans","Yu Gothic","Meiryo",sans-serif;
-      background: #f4f7fb;
-      color: #222;
-    }
-    header {
-      background: linear-gradient(135deg,#2146d0,#4f7cff);
-      color: #fff;
-      padding: 16px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: 700;
-    }
-    .wrap {
-      max-width: 1680px;
-      margin: 0 auto;
-      padding: 14px;
-    }
-    .box, .panel {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 8px 22px rgba(0,0,0,.08);
-      margin-bottom: 14px;
-    }
-    .box { padding: 12px; }
-    .panel { overflow: hidden; }
-    .panel-title {
-      padding: 14px 16px;
-      font-weight: 700;
-      border-bottom: 1px solid #eef1f7;
-      background: #fafcff;
-    }
-    .notice {
-      background: #fff8e8;
-      border: 1px solid #f3d38f;
-      color: #6c4d00;
-      border-radius: 12px;
-      padding: 12px;
-      line-height: 1.8;
-      font-size: 13px;
-    }
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-    select, input, button, textarea {
-      border: 1px solid #dbe3f2;
-      border-radius: 12px;
-      padding: 12px;
-      font-size: 14px;
-      background: #fff;
-    }
-    input { min-width: 150px; }
-    button {
-      border: none;
-      background: #2146d0;
-      color: #fff;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    button:hover { opacity: .92; }
-    .green-btn { background: #16a34a; }
-    .orange-btn { background: #f97316; }
-    .red-btn { background: #c51616; }
-    .purple-btn { background: #7a34c2; }
-    .gray-btn { background: #7d8aa5; }
-
-    .status-box {
-      margin-top: 10px;
-      padding: 10px 12px;
-      background: #f7faff;
-      border: 1px solid #e1e9fb;
-      border-radius: 12px;
-      font-size: 13px;
-      color: #3b4d6b;
-      line-height: 1.7;
-    }
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .chip {
-      background: #eef3ff;
-      color: #2146d0;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 560px 1fr;
-      gap: 14px;
-    }
-    .list {
-      height: 78vh;
-      overflow: auto;
-    }
-    .card {
-      padding: 14px 16px;
-      border-bottom: 1px solid #eef1f7;
-      cursor: pointer;
-      transition: .2s;
-      background: #fff;
-    }
-    .card:hover { background: #f5f8ff; }
-    .card.active {
-      background: #eaf0ff;
-      border-left: 5px solid #2146d0;
-    }
-    .card.visited { background: #f2f9f2; }
+    body { margin: 0; font-family: "Hiragino Sans","Yu Gothic","Meiryo",sans-serif; background: #f4f7fb; color: #222; }
+    header { background: linear-gradient(135deg,#2146d0,#4f7cff); color:#fff; padding:16px; text-align:center; font-size:22px; font-weight:700; }
+    .wrap { max-width: 1680px; margin: 0 auto; padding: 14px; }
+    .box,.panel { background:#fff; border-radius:16px; box-shadow:0 8px 22px rgba(0,0,0,.08); margin-bottom:14px; }
+    .box { padding:12px; }
+    .panel { overflow:hidden; }
+    .panel-title { padding:14px 16px; font-weight:700; border-bottom:1px solid #eef1f7; background:#fafcff; }
+    .notice { background:#fff8e8; border:1px solid #f3d38f; color:#6c4d00; border-radius:12px; padding:12px; line-height:1.8; font-size:13px; }
+    .row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+    select,input,button,textarea { border:1px solid #dbe3f2; border-radius:12px; padding:12px; font-size:14px; background:#fff; }
+    input { min-width:150px; }
+    button { border:none; background:#2146d0; color:#fff; cursor:pointer; white-space:nowrap; }
+    button:hover { opacity:.92; }
+    .green-btn { background:#16a34a; }
+    .red-btn { background:#c51616; }
+    .purple-btn { background:#7a34c2; }
+    .status-box { margin-top:10px; padding:10px 12px; background:#f7faff; border:1px solid #e1e9fb; border-radius:12px; font-size:13px; color:#3b4d6b; line-height:1.7; }
+    .chips { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
+    .chip { background:#eef3ff; color:#2146d0; padding:8px 12px; border-radius:999px; font-size:13px; font-weight:700; }
+    .layout { display:grid; grid-template-columns:560px 1fr; gap:14px; }
+    .list { height:78vh; overflow:auto; }
+    .card { padding:14px 16px; border-bottom:1px solid #eef1f7; cursor:pointer; transition:.2s; background:#fff; }
+    .card:hover { background:#f5f8ff; }
+    .card.active { background:#eaf0ff; border-left:5px solid #2146d0; }
+    .card.visited { background:#f2f9f2; }
     .card.today { box-shadow: inset 0 0 0 2px #7a34c2; }
-
-    .topline {
-      display: flex;
-      gap: 10px;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-    .order-badge {
-      width: 34px;
-      height: 34px;
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #2146d0;
-      color: #fff;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-    .name {
-      font-weight: 700;
-      line-height: 1.5;
-      margin-bottom: 6px;
-    }
-    .meta {
-      font-size: 13px;
-      color: #536076;
-      line-height: 1.7;
-      margin-top: 6px;
-    }
-    .distance {
-      margin-top: 8px;
-      font-size: 13px;
-      color: #2146d0;
-      font-weight: 700;
-    }
-    .source {
-      margin-top: 8px;
-      font-size: 12px;
-      line-height: 1.6;
-      color: #5f6b7d;
-      background: #f8fbff;
-      border: 1px solid #e6eefc;
-      border-radius: 10px;
-      padding: 8px 10px;
-    }
-    .badge-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 8px;
-    }
-    .badge {
-      font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: #eef3ff;
-      color: #2146d0;
-    }
-    .badge.called { background: #e8f0ff; color: #1f5ed8; }
-    .badge.absent { background: #fff3e8; color: #c46b00; }
-    .badge.revisit { background: #f6ebff; color: #7a34c2; }
-    .badge.hot { background: #e9f9ef; color: #138548; }
-    .badge.contract { background: #eaf7ff; color: #0070a8; }
-    .badge.done { background: #e8f6e8; color: #208340; }
-    .badge.todaybadge { background: #f4eaff; color: #7a34c2; }
-
-    .action-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-      align-items: center;
-    }
-    .small-btn {
-      padding: 8px 10px;
-      font-size: 12px;
-      border-radius: 10px;
-      background: #4f7cff;
-      color: #fff;
-      text-decoration: none;
-      display: inline-block;
-    }
-    .small-btn.green { background: #16a34a; }
-    .small-btn.orange { background: #f97316; }
-    .small-btn.gray { background: #7d8aa5; }
-    .small-btn.purple { background: #8b5cf6; }
-    .small-btn.teal { background: #0f9fb8; }
-
-    .visit-check {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      font-weight: 700;
-      color: #2c4b85;
-    }
-    .memo-box {
-      width: 100%;
-      min-height: 72px;
-      margin-top: 10px;
-      resize: vertical;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-    #map {
-      width: 100%;
-      height: 78vh;
-      min-height: 520px;
-      background: #d8dde8;
-    }
-    .subgrid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-    .big-text {
-      width: 100%;
-      min-height: 220px;
-      resize: vertical;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-    .footer {
-      font-size: 12px;
-      color: #5f6b7d;
-      line-height: 1.8;
-    }
-    a.tel-link {
-      color: #2146d0;
-      text-decoration: none;
-      font-weight: 700;
-    }
-
-    @media (max-width: 1100px) {
-      .layout { grid-template-columns: 1fr; }
-      .list { height: 420px; }
-      #map { height: 58vh; min-height: 380px; }
-      .subgrid { grid-template-columns: 1fr; }
+    .topline { display:flex; gap:10px; justify-content:space-between; align-items:flex-start; }
+    .order-badge { width:34px; height:34px; border-radius:999px; display:flex; align-items:center; justify-content:center; background:#2146d0; color:#fff; font-weight:700; flex-shrink:0; }
+    .name { font-weight:700; line-height:1.5; margin-bottom:6px; }
+    .meta { font-size:13px; color:#536076; line-height:1.7; margin-top:6px; }
+    .distance { margin-top:8px; font-size:13px; color:#2146d0; font-weight:700; }
+    .source { margin-top:8px; font-size:12px; line-height:1.6; color:#5f6b7d; background:#f8fbff; border:1px solid #e6eefc; border-radius:10px; padding:8px 10px; }
+    .badge-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .badge { font-size:12px; padding:4px 8px; border-radius:999px; background:#eef3ff; color:#2146d0; }
+    .badge.called { background:#e8f0ff; color:#1f5ed8; }
+    .badge.absent { background:#fff3e8; color:#c46b00; }
+    .badge.revisit { background:#f6ebff; color:#7a34c2; }
+    .badge.hot { background:#e9f9ef; color:#138548; }
+    .badge.contract { background:#eaf7ff; color:#0070a8; }
+    .badge.done { background:#e8f6e8; color:#208340; }
+    .badge.todaybadge { background:#f4eaff; color:#7a34c2; }
+    .action-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center; }
+    .small-btn { padding:8px 10px; font-size:12px; border-radius:10px; background:#4f7cff; color:#fff; text-decoration:none; display:inline-block; }
+    .small-btn.green { background:#16a34a; }
+    .small-btn.orange { background:#f97316; }
+    .small-btn.gray { background:#7d8aa5; }
+    .small-btn.purple { background:#8b5cf6; }
+    .small-btn.teal { background:#0f9fb8; }
+    .visit-check { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:700; color:#2c4b85; }
+    .memo-box { width:100%; min-height:72px; margin-top:10px; resize:vertical; font-size:13px; line-height:1.5; }
+    #map { width:100%; height:78vh; min-height:520px; background:#d8dde8; }
+    .subgrid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .big-text { width:100%; min-height:220px; resize:vertical; font-size:13px; line-height:1.6; }
+    .footer { font-size:12px; color:#5f6b7d; line-height:1.8; }
+    a.tel-link { color:#2146d0; text-decoration:none; font-weight:700; }
+    @media (max-width:1100px){
+      .layout { grid-template-columns:1fr; }
+      .list { height:420px; }
+      #map { height:58vh; min-height:380px; }
+      .subgrid { grid-template-columns:1fr; }
     }
   </style>
 </head>
 <body>
-  <header>営業アプリ｜CSV読込完全版</header>
+  <header>営業アプリ｜地域包括あり完全版</header>
 
   <div class="wrap">
     <div class="box">
       <div class="notice">
-        これは <strong>CSVを選ぶだけで読み込める版</strong>です。<br>
-        <strong>202603kyotaku01.csv / 202603kyotaku02.csv / houmonnkaigo.csv</strong> を読み込めます。<br>
-        Shift-JIS と UTF-8 の両方に対応しています。
+        地域包括・ブランチは最初から入っています。<br>
+        CSV選択で居宅介護支援事業所・訪問介護を追加できます。
       </div>
     </div>
 
     <div class="box">
       <div class="row">
-        <select id="wardFilter">
-          <option value="all">全区</option>
-        </select>
+        <select id="wardFilter"><option value="all">全区</option></select>
 
         <select id="typeFilter">
           <option value="all">全種別</option>
@@ -326,7 +126,7 @@
         <input id="uploadKyotaku" type="file" accept=".csv,text/csv" multiple onchange="loadSelectedCsvs(event)" />
       </div>
 
-      <div id="statusBox" class="status-box">CSVを選んでください。</div>
+      <div id="statusBox" class="status-box">地域包括・ブランチを表示中。CSVを選ぶと追加されます。</div>
 
       <div class="chips">
         <div class="chip" id="totalCount">全件: 0</div>
@@ -370,7 +170,16 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    const offices = [];
+    const offices = [
+      { id:"hokatsu-chuo", ward:"中央区", type:"地域包括支援センター", name:"中央区地域包括支援センター", address:"大阪市中央区上本町西2-5-25", phone:"06-6763-8139", lat:34.6730, lng:135.5203, source:"初期登録", checked:"2026-04-22", keywords:"中央区 谷町六丁目駅 谷六 上本町" },
+      { id:"hokatsu-chuo-hokubu", ward:"中央区", type:"地域包括支援センター", name:"中央区北部地域包括支援センター", address:"大阪市中央区農人橋3-1-3", phone:"06-6944-2116", lat:34.6809, lng:135.5125, source:"初期登録", checked:"2026-04-22", keywords:"中央区 本町駅 堺筋本町駅 谷町四丁目駅" },
+      { id:"hokatsu-kita", ward:"北区", type:"地域包括支援センター", name:"北区地域包括支援センター", address:"大阪市北区神山町15-11", phone:"06-6313-5568", lat:34.7054, lng:135.5069, source:"初期登録", checked:"2026-04-22", keywords:"北区 扇町駅 中崎町駅 梅田駅" },
+      { id:"branch-kita-umeda", ward:"北区", type:"総合相談窓口（ブランチ）", name:"梅田東ブランチ", address:"大阪市北区芝田2-10-39", phone:"06-6372-0804", lat:34.7079, lng:135.4946, source:"初期登録", checked:"2026-04-22", keywords:"北区 梅田駅 大阪駅 中津駅" },
+      { id:"hokatsu-tennoji", ward:"天王寺区", type:"地域包括支援センター", name:"天王寺区地域包括支援センター", address:"大阪市天王寺区六万体町5-26", phone:"06-6774-3386", lat:34.6589, lng:135.5166, source:"初期登録", checked:"2026-04-22", keywords:"天王寺区 四天王寺前夕陽ヶ丘駅 谷町九丁目駅" },
+      { id:"hokatsu-abeno", ward:"阿倍野区", type:"地域包括支援センター", name:"阿倍野区地域包括支援センター", address:"大阪市阿倍野区帝塚山1-3-8", phone:"06-6628-1400", lat:34.6258, lng:135.5015, source:"初期登録", checked:"2026-04-22", keywords:"阿倍野区 姫松駅 帝塚山駅 阿倍野駅" },
+      { id:"hokatsu-naniwa", ward:"浪速区", type:"地域包括支援センター", name:"浪速区地域包括支援センター", address:"大阪市浪速区難波中3-8-8", phone:"06-6636-6029", lat:34.6614, lng:135.4964, source:"初期登録", checked:"2026-04-22", keywords:"浪速区 なんば駅 難波駅 大国町駅" },
+      { id:"hokatsu-nishi", ward:"西区", type:"地域包括支援センター", name:"西区地域包括支援センター", address:"大阪市西区新町4-5-14", phone:"06-6539-8075", lat:34.6767, lng:135.4893, source:"初期登録", checked:"2026-04-22", keywords:"西区 西長堀駅 阿波座駅 西大橋駅" }
+    ];
 
     const OSAKA_WARDS = [
       "北区","都島区","福島区","此花区","中央区","西区","港区","大正区","天王寺区","浪速区",
@@ -877,7 +686,7 @@
     function generateDailyReport(){
       const visible = currentRenderedData;
       const d = new Date();
-      const dateText = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+      const dateText = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日}`;
 
       let report = `【営業日報】\n日付：${dateText}\n\n`;
       visible.forEach((office, idx) => {
@@ -899,7 +708,6 @@
       const result = [];
       let cur = "";
       let inQuotes = false;
-
       for(let i = 0; i < line.length; i++){
         const ch = line[i];
         if(ch === '"'){
@@ -924,14 +732,8 @@
       const buffer = await file.arrayBuffer();
       const bytes = new Uint8Array(buffer);
 
-      try {
-        return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-      } catch(e) {}
-
-      try {
-        return new TextDecoder("shift-jis").decode(bytes);
-      } catch(e) {}
-
+      try { return new TextDecoder("utf-8", { fatal: true }).decode(bytes); } catch(e) {}
+      try { return new TextDecoder("shift-jis").decode(bytes); } catch(e) {}
       return new TextDecoder("utf-8").decode(bytes);
     }
 
@@ -947,7 +749,6 @@
 
     function addOfficeRecord({ ward, type, name, address, phone, source, checked }){
       if(!name || !address) return false;
-
       const fixedWard = ward || wardFromAddress(address);
       if(!fixedWard) return false;
 
@@ -984,7 +785,6 @@
         try{
           const text = await decodeCsvFile(file);
           const lines = text.split(/\r?\n/).filter(Boolean);
-
           if(lines.length < 2){
             messages.push(`${file.name}: データがありません`);
             continue;
@@ -1018,7 +818,6 @@
             const serviceCode = idxServiceCode !== -1 ? (cols[idxServiceCode] || "") : "";
 
             if(!name || !address) continue;
-
             const ward = wardFromAddress(address);
             if(!ward) continue;
 
@@ -1103,6 +902,7 @@
       setStatus(`${count}件 追加しました。`);
     }
 
+    rebuildWardOptions();
     renderListAndMap(offices);
   </script>
 </body>
