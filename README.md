@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>営業アプリ｜大阪市全区 自動読込＋住所座標化版</title>
+  <title>営業アプリ｜大阪市全区 完成版</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; }
@@ -272,14 +272,14 @@
   </style>
 </head>
 <body>
-  <header>営業アプリ｜大阪市全区 自動読込＋住所座標化版</header>
+  <header>営業アプリ｜大阪市全区 完成版</header>
 
   <div class="wrap">
     <div class="box">
       <div class="notice">
-        このアプリは公開されている事業所情報の表示を前提にしています。<br>
-        地域包括・ブランチは住所から順番に座標化し、端末内に保存します。初回は少し時間がかかります。<br>
-        居宅は大阪府CSVの緯度経度があればそのまま使います。
+        公開情報ベースの営業アプリです。<br>
+        大阪市の地域包括・ブランチは自動読込します。<br>
+        居宅は、あなたの kyotakukaigoshien.csv をそのまま選ぶだけで追加できます。
       </div>
     </div>
 
@@ -312,7 +312,7 @@
           <option value="not_today">今日回る先以外</option>
         </select>
 
-        <input id="keyword" type="text" placeholder="区名・駅名・種別・事業所名・住所・電話で検索" />
+        <input id="keyword" type="text" placeholder="区名・駅名・事業所名・住所・電話で検索" />
         <input id="placeSearch" type="text" placeholder="本町駅・梅田駅・天王寺駅などを検索" />
 
         <button onclick="applyFilters()">絞り込み</button>
@@ -328,9 +328,9 @@
       </div>
 
       <div class="row" style="margin-top:10px;">
-        <button class="green-btn" onclick="loadAllOfficialData(true)">再読込</button>
+        <button class="green-btn" onclick="loadAllOfficialData(true)">地域包括・ブランチ再読込</button>
         <button class="orange-btn" onclick="clearGeocodeCache()">座標キャッシュ削除</button>
-        <input id="officialCsvFiles" type="file" accept=".csv,text/csv" multiple onchange="loadKyotakuFromFiles(event)" />
+        <input id="kyotakuCsvFile" type="file" accept=".csv,text/csv" onchange="loadUploadedKyotakuCsv(event)" />
       </div>
 
       <div id="statusBox" class="status-box">現在地はまだ取得していません。</div>
@@ -378,10 +378,6 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     const OSAKA_CITY_OFFICIAL_CSV = "https://www.city.osaka.lg.jp/fukushi/cmsfiles/contents/0000370/370519/6csv.csv";
-    const OSAKA_PREF_OFFICIAL_CSVS = [
-      "https://www.pref.osaka.lg.jp/documents/23900/202603kyotaku01.csv",
-      "https://www.pref.osaka.lg.jp/documents/23900/202603kyotaku02.csv"
-    ];
 
     const offices = [];
 
@@ -1051,41 +1047,6 @@
       URL.revokeObjectURL(url);
     }
 
-    function importSimpleCSV(){
-      const text = csvInput.value.trim();
-      if(!text){
-        alert("CSVを貼ってください。");
-        return;
-      }
-      const lines = text.split(/\r?\n/).filter(Boolean);
-      let count = 0;
-      lines.forEach((line, index) => {
-        const cols = line.split(",").map(v => v.trim());
-        if(index === 0 && cols[0] === "区名") return;
-        if(cols.length < 10) return;
-
-        const [ward, type, name, address, phone, latStr, lngStr, source, checked, keywords] = cols;
-        const lat = parseFloat(latStr);
-        const lng = parseFloat(lngStr);
-        if(!ward || !type || !name || !address || Number.isNaN(lat) || Number.isNaN(lng)) return;
-
-        const id = safeId(`${ward}-${name}-${phone}`);
-        if(offices.some(o => o.id === id)) return;
-
-        offices.push({
-          id, ward, type, name, address, phone, lat, lng,
-          source: source || "CSV追加",
-          checked: checked || todayStr(),
-          keywords: keywords || "",
-          needsGeocode: false
-        });
-        count++;
-      });
-      rebuildWardOptions();
-      renderListAndMap(offices);
-      setStatus(`${count}件 追加しました。`);
-    }
-
     function guessColumnIndex(headers, candidates){
       const normalized = headers.map(h => normalizeText(h));
       for(const c of candidates){
@@ -1122,11 +1083,6 @@
 
     function wardFromAddress(address){
       return OSAKA_WARDS.find(w => String(address || "").includes(w)) || "";
-    }
-
-    function looksLikeOsakaCity(address, ward){
-      if (OSAKA_WARDS.includes(ward)) return true;
-      return OSAKA_WARDS.some(w => String(address || "").includes(`大阪市${w}`) || String(address || "").includes(w));
     }
 
     function buildKeywords(ward, name){
@@ -1184,7 +1140,7 @@
       return { lat, lng };
     }
 
-    async function geocodePendingCityOffices(){
+    async function geocodePendingOffices(){
       const pending = offices.filter(o => o.needsGeocode);
       if(pending.length === 0) return;
 
@@ -1198,7 +1154,7 @@
           office.lng = result.lng;
           office.needsGeocode = false;
         }
-        renderListAndMap(getFilteredData().length ? getFilteredData() : offices);
+        renderListAndMap(offices);
         await sleep(1100);
       }
       setStatus("住所からの座標取得が完了しました。");
@@ -1257,113 +1213,127 @@
       return imported;
     }
 
-    function importOfficialKyotakuCsvText(text, sourceLabel){
-      const lines = text.split(/\r?\n/).filter(Boolean);
-      if(lines.length < 2) return 0;
-
-      const headers = parseCsvLine(lines[0]);
-      const serviceNameIdx = guessColumnIndex(headers, ["サービス種類名称","サービス種類"]);
-      const officeNameIdx = guessColumnIndex(headers, ["事業所名称","施設名称"]);
-      const addressIdx = guessColumnIndex(headers, ["事業所所在地","住所"]);
-      const phoneIdx = guessColumnIndex(headers, ["事業所電話番号","電話番号"]);
-      const latIdx = guessColumnIndex(headers, ["緯度"]);
-      const lngIdx = guessColumnIndex(headers, ["経度"]);
-      const wardIdx = guessColumnIndex(headers, ["区市町村","市区町村","行政区","保険者名"]);
-      const updatedIdx = guessColumnIndex(headers, ["異動年月日","更新年月日","指定年月日"]);
-
-      let imported = 0;
-
-      for(let i = 1; i < lines.length; i++){
-        const cols = parseCsvLine(lines[i]);
-        const serviceName = cols[serviceNameIdx] || "";
-        if(!normalizeText(serviceName).includes(normalizeText("居宅介護支援"))) continue;
-
-        const address = cols[addressIdx] || "";
-        const rawWard = cols[wardIdx] || "";
-        const ward = wardFromAddress(address) || rawWard;
-        if(!looksLikeOsakaCity(address, ward)) continue;
-
-        const name = cols[officeNameIdx] || "";
-        if(!name || !address) continue;
-
-        const lat = parseFloat(cols[latIdx] || "");
-        const lng = parseFloat(cols[lngIdx] || "");
-        if(Number.isNaN(lat) || Number.isNaN(lng)) continue;
-
-        const phone = cols[phoneIdx] || "";
-        const checked = cols[updatedIdx] || "2026-03";
-        const id = safeId(`${ward}-${name}-${phone}-${address}`);
-        if(offices.some(o => o.id === id)) continue;
-
-        offices.push({
-          id,
-          ward: ward || "大阪市",
-          type: "居宅介護支援事業所",
-          name,
-          address,
-          phone,
-          lat,
-          lng,
-          source: `大阪府 介護保険事業所台帳情報 (${sourceLabel})`,
-          checked,
-          keywords: buildKeywords(ward || "大阪市", name),
-          needsGeocode: false
-        });
-        imported++;
-      }
-      return imported;
-    }
-
     async function loadOsakaCityData(){
       const cityRes = await fetch(OSAKA_CITY_OFFICIAL_CSV, { cache: "no-store" });
       if(!cityRes.ok) throw new Error("大阪市CSVの読込に失敗しました。");
       return importOsakaCityCsvText(await cityRes.text());
     }
 
-    async function loadKyotakuData(){
-      let importedKyotaku = 0;
-      for(const url of OSAKA_PREF_OFFICIAL_CSVS){
-        const res = await fetch(url, { cache: "no-store" });
-        if(!res.ok) throw new Error(`大阪府CSVの読込に失敗しました: ${url}`);
-        importedKyotaku += importOfficialKyotakuCsvText(await res.text(), url);
-      }
-      return importedKyotaku;
-    }
-
     async function loadAllOfficialData(reset = false){
-      setStatus("大阪市と大阪府の公式CSVを自動読込しています…");
+      setStatus("大阪市の地域包括・ブランチを自動読込しています…");
       try{
         if(reset) offices.length = 0;
         else offices.length = 0;
 
         const importedCity = await loadOsakaCityData();
-        const importedKyotaku = await loadKyotakuData();
-
         rebuildWardOptions();
         renderListAndMap(offices);
-        setStatus(`自動読込完了：地域包括・ブランチ ${importedCity} 件、居宅 ${importedKyotaku} 件 追加しました。`);
+        setStatus(`地域包括・ブランチ ${importedCity} 件を読み込みました。住所から座標を取得します…`);
 
-        await geocodePendingCityOffices();
+        await geocodePendingOffices();
         renderListAndMap(offices);
       }catch(err){
         console.error(err);
-        setStatus("自動読込に失敗しました。下のファイル選択または手動CSV追加を使ってください。");
+        setStatus("自動読込に失敗しました。");
       }
     }
 
-    async function loadKyotakuFromFiles(event){
-      const files = Array.from(event.target.files || []);
-      if(files.length === 0) return;
+    async function loadUploadedKyotakuCsv(event){
+      const file = event.target.files?.[0];
+      if(!file){
+        alert("CSVファイルを選んでください。");
+        return;
+      }
+
+      const text = await file.text();
+      const lines = text.split(/\r?\n/).filter(Boolean);
+      if(lines.length < 2){
+        alert("CSVの中身が見つかりません。");
+        return;
+      }
 
       let imported = 0;
-      for(const file of files){
-        const text = await file.text();
-        imported += importOfficialKyotakuCsvText(text, file.name);
+
+      for(let i = 1; i < lines.length; i++){
+        const cols = parseCsvLine(lines[i]);
+        if(cols.length < 8) continue;
+
+        const jigyoshoNo = cols[0] || "";
+        const name = cols[1] || "";
+        const address = cols[3] || "";
+        const phone = cols[4] || "";
+        const checked = cols[6] || "";
+        const houjin = cols[7] || "";
+
+        if(!name || !address) continue;
+
+        const ward = wardFromAddress(address);
+        if(!ward) continue;
+
+        const cached = getCachedGeocode(address);
+
+        const id = safeId(`${ward}-${name}-${jigyoshoNo}`);
+        if(offices.some(o => o.id === id)) continue;
+
+        offices.push({
+          id,
+          ward,
+          type: "居宅介護支援事業所",
+          name,
+          address,
+          phone,
+          lat: cached?.lat ?? 34.6937,
+          lng: cached?.lng ?? 135.5023,
+          source: `手動読込CSV (${houjin || "法人名なし"})`,
+          checked: checked || todayStr(),
+          keywords: buildKeywords(ward, name),
+          needsGeocode: !(cached && Number.isFinite(cached.lat) && Number.isFinite(cached.lng))
+        });
+
+        imported++;
       }
 
       rebuildWardOptions();
       renderListAndMap(offices);
-      setStatus(`ファイルから ${imported} 件の大阪市内居宅を追加しました。`);
+      setStatus(`${imported}件の居宅を追加しました。住所から座標を順番に取得します…`);
+
+      await geocodePendingOffices();
+      renderListAndMap(offices);
+    }
+
+    function importSimpleCSV(){
+      const text = csvInput.value.trim();
+      if(!text){
+        alert("CSVを貼ってください。");
+        return;
+      }
+      const lines = text.split(/\r?\n/).filter(Boolean);
+      let count = 0;
+      lines.forEach((line, index) => {
+        const cols = line.split(",").map(v => v.trim());
+        if(index === 0 && cols[0] === "区名") return;
+        if(cols.length < 10) return;
+
+        const [ward, type, name, address, phone, latStr, lngStr, source, checked, keywords] = cols;
+        const lat = parseFloat(latStr);
+        const lng = parseFloat(lngStr);
+        if(!ward || !type || !name || !address || Number.isNaN(lat) || Number.isNaN(lng)) return;
+
+        const id = safeId(`${ward}-${name}-${phone}`);
+        if(offices.some(o => o.id === id)) return;
+
+        offices.push({
+          id, ward, type, name, address, phone, lat, lng,
+          source: source || "CSV追加",
+          checked: checked || todayStr(),
+          keywords: keywords || "",
+          needsGeocode: false
+        });
+        count++;
+      });
+      rebuildWardOptions();
+      renderListAndMap(offices);
+      setStatus(`${count}件 追加しました。`);
     }
 
     renderListAndMap(offices);
