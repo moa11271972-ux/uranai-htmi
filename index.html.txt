@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>営業アプリ確認版</title>
+  <style>
+    body{
+      margin:0;
+      font-family:"Hiragino Sans","Yu Gothic","Meiryo",sans-serif;
+      background:#f4f7fb;
+      color:#222;
+      padding:20px;
+    }
+    h1{
+      margin:0 0 16px;
+      color:#2146d0;
+    }
+    .box{
+      max-width:900px;
+      margin:0 auto;
+      background:#fff;
+      border-radius:16px;
+      padding:16px;
+      box-shadow:0 8px 22px rgba(0,0,0,.08);
+    }
+    .card{
+      border:1px solid #dbe3f2;
+      border-radius:12px;
+      padding:12px;
+      margin-bottom:10px;
+      background:#fafcff;
+    }
+    .name{
+      font-weight:700;
+      font-size:18px;
+      margin-bottom:6px;
+    }
+    .meta{
+      font-size:14px;
+      line-height:1.7;
+      color:#445;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>営業アプリ確認版</h1>
+    <div id="list"></div>
+  </div>
+
+  <script>
+    const offices = [
+      {
+        ward: "中央区",
+        type: "地域包括支援センター",
+        name: "中央区地域包括支援センター",
+        address: "大阪市中央区上本町西2-5-25",
+        phone: "06-6763-8139"
+      },
+      {
+        ward: "北区",
+        type: "地域包括支援センター",
+        name: "北区地域包括支援センター",
+        address: "大阪市北区神山町15-11",
+        phone: "06-6313-5568"
+      },
+      {
+        ward: "天王寺区",
+        type: "地域包括支援センター",
+        name: "天王寺区地域包括支援センター",
+        address: "大阪市天王寺区六万体町5-26",
+        phone: "06-6774-3386"
+      },
+      {
+        ward: "阿倍野区",
+        type: "地域包括支援センター",
+        name: "阿倍野区地域包括支援センター",
+        address: "大阪市阿倍野区帝塚山1-3-8",
+        phone: "06-6628-1400"
+      }
+    ];
+
+    const listEl = document.getElementById("list");
+
+    offices.forEach((office) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="name">${office.name}</div>
+        <div class="meta">
+          区: ${office.ward}<br>
+          種別: ${office.type}<br>
+          住所: ${office.address}<br>
+          電話: ${office.phone}
+        </div>
+      `;
+      listEl.appendChild(card);
+    });
+  </script>
+</body>
+</html>
