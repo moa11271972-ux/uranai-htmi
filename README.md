@@ -3,299 +3,113 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>営業アプリ｜大阪市全区 完成版</title>
+  <title>営業アプリ｜読み込み修正版</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: "Hiragino Sans","Yu Gothic","Meiryo",sans-serif;
-      background: #f4f7fb;
-      color: #222;
+    body { margin:0; font-family:"Hiragino Sans","Yu Gothic","Meiryo",sans-serif; background:#f4f7fb; color:#222; }
+    header { background:linear-gradient(135deg,#2146d0,#4f7cff); color:#fff; padding:16px; text-align:center; font-size:22px; font-weight:700; }
+    .wrap { max-width:1680px; margin:0 auto; padding:14px; }
+    .box,.panel { background:#fff; border-radius:16px; box-shadow:0 8px 22px rgba(0,0,0,.08); margin-bottom:14px; }
+    .box { padding:12px; }
+    .panel { overflow:hidden; }
+    .panel-title { padding:14px 16px; font-weight:700; border-bottom:1px solid #eef1f7; background:#fafcff; }
+    .notice { background:#fff8e8; border:1px solid #f3d38f; color:#6c4d00; border-radius:12px; padding:12px; line-height:1.8; font-size:13px; }
+    .row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+    select,input,button,textarea {
+      border:1px solid #dbe3f2; border-radius:12px; padding:12px; font-size:14px; background:#fff;
     }
-    header {
-      background: linear-gradient(135deg,#2146d0,#4f7cff);
-      color: #fff;
-      padding: 16px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: 700;
-    }
-    .wrap {
-      max-width: 1680px;
-      margin: 0 auto;
-      padding: 14px;
-    }
-    .box, .panel {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 8px 22px rgba(0,0,0,.08);
-      margin-bottom: 14px;
-    }
-    .box { padding: 12px; }
-    .panel { overflow: hidden; }
-    .panel-title {
-      padding: 14px 16px;
-      font-weight: 700;
-      border-bottom: 1px solid #eef1f7;
-      background: #fafcff;
-    }
-    .notice {
-      background: #fff8e8;
-      border: 1px solid #f3d38f;
-      color: #6c4d00;
-      border-radius: 12px;
-      padding: 12px;
-      line-height: 1.8;
-      font-size: 13px;
-    }
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-    select, input, button, textarea {
-      border: 1px solid #dbe3f2;
-      border-radius: 12px;
-      padding: 12px;
-      font-size: 14px;
-      background: #fff;
-    }
-    input { min-width: 150px; }
-    button {
-      border: none;
-      background: #2146d0;
-      color: #fff;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    button:hover { opacity: .92; }
-    .green-btn { background: #16a34a; }
-    .orange-btn { background: #f97316; }
-    .red-btn { background: #c51616; }
-    .purple-btn { background: #7a34c2; }
-    .gray-btn { background: #7d8aa5; }
+    input { min-width:150px; }
+    button { border:none; background:#2146d0; color:#fff; cursor:pointer; white-space:nowrap; }
+    button:hover { opacity:.92; }
+    .green-btn { background:#16a34a; }
+    .orange-btn { background:#f97316; }
+    .red-btn { background:#c51616; }
+    .purple-btn { background:#7a34c2; }
 
     .status-box {
-      margin-top: 10px;
-      padding: 10px 12px;
-      background: #f7faff;
-      border: 1px solid #e1e9fb;
-      border-radius: 12px;
-      font-size: 13px;
-      color: #3b4d6b;
-      line-height: 1.7;
+      margin-top:10px; padding:10px 12px; background:#f7faff; border:1px solid #e1e9fb;
+      border-radius:12px; font-size:13px; color:#3b4d6b; line-height:1.7;
     }
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .chip {
-      background: #eef3ff;
-      color: #2146d0;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
-    }
+    .chips { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
+    .chip { background:#eef3ff; color:#2146d0; padding:8px 12px; border-radius:999px; font-size:13px; font-weight:700; }
 
-    .layout {
-      display: grid;
-      grid-template-columns: 560px 1fr;
-      gap: 14px;
-    }
-    .list {
-      height: 78vh;
-      overflow: auto;
-    }
-    .card {
-      padding: 14px 16px;
-      border-bottom: 1px solid #eef1f7;
-      cursor: pointer;
-      transition: .2s;
-      background: #fff;
-    }
-    .card:hover { background: #f5f8ff; }
-    .card.active {
-      background: #eaf0ff;
-      border-left: 5px solid #2146d0;
-    }
-    .card.visited { background: #f2f9f2; }
-    .card.today { box-shadow: inset 0 0 0 2px #7a34c2; }
+    .layout { display:grid; grid-template-columns:560px 1fr; gap:14px; }
+    .list { height:78vh; overflow:auto; }
+    .card { padding:14px 16px; border-bottom:1px solid #eef1f7; cursor:pointer; transition:.2s; background:#fff; }
+    .card:hover { background:#f5f8ff; }
+    .card.active { background:#eaf0ff; border-left:5px solid #2146d0; }
+    .card.visited { background:#f2f9f2; }
+    .card.today { box-shadow:inset 0 0 0 2px #7a34c2; }
 
-    .topline {
-      display: flex;
-      gap: 10px;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
+    .topline { display:flex; gap:10px; justify-content:space-between; align-items:flex-start; }
     .order-badge {
-      width: 34px;
-      height: 34px;
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #2146d0;
-      color: #fff;
-      font-weight: 700;
-      flex-shrink: 0;
+      width:34px; height:34px; border-radius:999px; display:flex; align-items:center; justify-content:center;
+      background:#2146d0; color:#fff; font-weight:700; flex-shrink:0;
     }
-    .name {
-      font-weight: 700;
-      line-height: 1.5;
-      margin-bottom: 6px;
-    }
-    .meta {
-      font-size: 13px;
-      color: #536076;
-      line-height: 1.7;
-      margin-top: 6px;
-    }
-    .distance {
-      margin-top: 8px;
-      font-size: 13px;
-      color: #2146d0;
-      font-weight: 700;
-    }
+    .name { font-weight:700; line-height:1.5; margin-bottom:6px; }
+    .meta { font-size:13px; color:#536076; line-height:1.7; margin-top:6px; }
+    .distance { margin-top:8px; font-size:13px; color:#2146d0; font-weight:700; }
     .source {
-      margin-top: 8px;
-      font-size: 12px;
-      line-height: 1.6;
-      color: #5f6b7d;
-      background: #f8fbff;
-      border: 1px solid #e6eefc;
-      border-radius: 10px;
-      padding: 8px 10px;
+      margin-top:8px; font-size:12px; line-height:1.6; color:#5f6b7d;
+      background:#f8fbff; border:1px solid #e6eefc; border-radius:10px; padding:8px 10px;
     }
-    .badge-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 8px;
-    }
-    .badge {
-      font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: #eef3ff;
-      color: #2146d0;
-    }
-    .badge.called { background: #e8f0ff; color: #1f5ed8; }
-    .badge.absent { background: #fff3e8; color: #c46b00; }
-    .badge.revisit { background: #f6ebff; color: #7a34c2; }
-    .badge.hot { background: #e9f9ef; color: #138548; }
-    .badge.contract { background: #eaf7ff; color: #0070a8; }
-    .badge.done { background: #e8f6e8; color: #208340; }
-    .badge.todaybadge { background: #f4eaff; color: #7a34c2; }
-    .badge.pending { background: #fff7e6; color: #a16207; }
+    .badge-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .badge { font-size:12px; padding:4px 8px; border-radius:999px; background:#eef3ff; color:#2146d0; }
+    .badge.called { background:#e8f0ff; color:#1f5ed8; }
+    .badge.absent { background:#fff3e8; color:#c46b00; }
+    .badge.revisit { background:#f6ebff; color:#7a34c2; }
+    .badge.hot { background:#e9f9ef; color:#138548; }
+    .badge.contract { background:#eaf7ff; color:#0070a8; }
+    .badge.done { background:#e8f6e8; color:#208340; }
+    .badge.todaybadge { background:#f4eaff; color:#7a34c2; }
 
-    .action-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-      align-items: center;
-    }
-    .small-btn {
-      padding: 8px 10px;
-      font-size: 12px;
-      border-radius: 10px;
-      background: #4f7cff;
-      color: #fff;
-      text-decoration: none;
-      display: inline-block;
-    }
-    .small-btn.green { background: #16a34a; }
-    .small-btn.orange { background: #f97316; }
-    .small-btn.gray { background: #7d8aa5; }
-    .small-btn.purple { background: #8b5cf6; }
-    .small-btn.teal { background: #0f9fb8; }
+    .action-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center; }
+    .small-btn { padding:8px 10px; font-size:12px; border-radius:10px; background:#4f7cff; color:#fff; text-decoration:none; display:inline-block; }
+    .small-btn.green { background:#16a34a; }
+    .small-btn.orange { background:#f97316; }
+    .small-btn.gray { background:#7d8aa5; }
+    .small-btn.purple { background:#8b5cf6; }
+    .small-btn.teal { background:#0f9fb8; }
 
-    .visit-check {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      font-weight: 700;
-      color: #2c4b85;
-    }
-    .memo-box {
-      width: 100%;
-      min-height: 72px;
-      margin-top: 10px;
-      resize: vertical;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-    #map {
-      width: 100%;
-      height: 78vh;
-      min-height: 520px;
-      background: #d8dde8;
-    }
-    .subgrid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-    .big-text {
-      width: 100%;
-      min-height: 220px;
-      resize: vertical;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-    .footer {
-      font-size: 12px;
-      color: #5f6b7d;
-      line-height: 1.8;
-    }
-    a.tel-link {
-      color: #2146d0;
-      text-decoration: none;
-      font-weight: 700;
-    }
-    .muted {
-      font-size: 12px;
-      color: #6b7280;
-    }
-    @media (max-width: 1100px) {
-      .layout { grid-template-columns: 1fr; }
-      .list { height: 420px; }
-      #map { height: 58vh; min-height: 380px; }
-      .subgrid { grid-template-columns: 1fr; }
+    .visit-check { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:700; color:#2c4b85; }
+    .memo-box { width:100%; min-height:72px; margin-top:10px; resize:vertical; font-size:13px; line-height:1.5; }
+    #map { width:100%; height:78vh; min-height:520px; background:#d8dde8; }
+    .subgrid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .big-text { width:100%; min-height:220px; resize:vertical; font-size:13px; line-height:1.6; }
+    .footer { font-size:12px; color:#5f6b7d; line-height:1.8; }
+    a.tel-link { color:#2146d0; text-decoration:none; font-weight:700; }
+
+    @media (max-width:1100px) {
+      .layout { grid-template-columns:1fr; }
+      .list { height:420px; }
+      #map { height:58vh; min-height:380px; }
+      .subgrid { grid-template-columns:1fr; }
     }
   </style>
 </head>
 <body>
-  <header>営業アプリ｜大阪市全区 完成版</header>
+  <header>営業アプリ｜読み込み修正版</header>
 
   <div class="wrap">
     <div class="box">
       <div class="notice">
-        公開情報ベースの営業アプリです。<br>
-        大阪市の地域包括・ブランチは自動読込します。<br>
-        居宅は、あなたの kyotakukaigoshien.csv をそのまま選ぶだけで追加できます。
+        読み込みできなかった原因に対応した版です。<br>
+        UTF-8 と Shift-JIS/CP932 の両方のCSVを読めます。<br>
+        <strong>houmonnkaigo.csv</strong> と <strong>202603kyotaku01.csv / 202603kyotaku02.csv</strong> をそのまま選べます。
       </div>
     </div>
 
     <div class="box">
       <div class="row">
-        <select id="wardFilter">
-          <option value="all">全区</option>
-        </select>
-
+        <select id="wardFilter"><option value="all">全区</option></select>
         <select id="typeFilter">
           <option value="all">全種別</option>
           <option value="地域包括支援センター">地域包括支援センター</option>
           <option value="総合相談窓口（ブランチ）">総合相談窓口（ブランチ）</option>
           <option value="居宅介護支援事業所">居宅介護支援事業所</option>
+          <option value="訪問介護">訪問介護</option>
         </select>
-
         <select id="salesStatusFilter">
           <option value="all">全営業状態</option>
           <option value="未対応">未対応</option>
@@ -305,7 +119,6 @@
           <option value="見込みあり">見込みあり</option>
           <option value="契約候補">契約候補</option>
         </select>
-
         <select id="todayFilter">
           <option value="all">今日の予定 全て</option>
           <option value="today">今日回る先のみ</option>
@@ -323,17 +136,14 @@
         <button onclick="sortTodayByWalkingOrder()">今日予定を近い順</button>
         <button onclick="jumpToNextUnvisited()">次の未訪問へ</button>
         <button class="red-btn" onclick="generateDailyReport()">日報作成</button>
-        <button onclick="copyDailyReport()">日報コピー</button>
-        <button onclick="exportSalesData()">CSV出力</button>
       </div>
 
       <div class="row" style="margin-top:10px;">
-        <button class="green-btn" onclick="loadAllOfficialData(true)">地域包括・ブランチ再読込</button>
-        <button class="orange-btn" onclick="clearGeocodeCache()">座標キャッシュ削除</button>
-        <input id="kyotakuCsvFile" type="file" accept=".csv,text/csv" onchange="loadUploadedKyotakuCsv(event)" />
+        <button class="green-btn" onclick="loadCityCsv()">地域包括・ブランチ読込</button>
+        <input id="uploadKyotaku" type="file" accept=".csv,text/csv" multiple onchange="loadSelectedCsvs(event)" />
       </div>
 
-      <div id="statusBox" class="status-box">現在地はまだ取得していません。</div>
+      <div id="statusBox" class="status-box">CSVを選んでください。</div>
 
       <div class="chips">
         <div class="chip" id="totalCount">全件: 0</div>
@@ -350,7 +160,6 @@
         <div class="panel-title">営業先リスト</div>
         <div id="list" class="list"></div>
       </div>
-
       <div class="panel">
         <div class="panel-title">地図</div>
         <div id="map"></div>
@@ -362,15 +171,14 @@
         <div class="panel-title" style="margin:-12px -12px 12px -12px; border-radius:16px 16px 0 0;">CSV手動追加</div>
         <div class="footer">列順：区名,種別,事業所名,住所,電話,緯度,経度,出典,確認日,検索補助語</div>
         <textarea id="csvInput" class="big-text" placeholder="例:
-中央区,居宅介護支援事業所,中央ケアプランセンター本町,大阪市中央区南本町1-1-1,06-0000-1111,34.680,135.509,介護保険事業所台帳情報,2026-03,本町駅 堺筋本町駅 中央区"></textarea>
+中央区,居宅介護支援事業所,中央ケアプランセンター本町,大阪市中央区南本町1-1-1,06-0000-1111,34.680,135.509,手動追加,2026-03,中央区 本町駅 居宅"></textarea>
         <div class="row" style="margin-top:10px;">
           <button class="purple-btn" onclick="importSimpleCSV()">CSV追加</button>
         </div>
       </div>
-
       <div class="box">
         <div class="panel-title" style="margin:-12px -12px 12px -12px; border-radius:16px 16px 0 0;">本日の営業日報</div>
-        <textarea id="dailyReport" class="big-text" placeholder="日報作成を押すとここに入ります。"></textarea>
+        <textarea id="dailyReport" class="big-text"></textarea>
       </div>
     </div>
   </div>
@@ -378,26 +186,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     const OSAKA_CITY_OFFICIAL_CSV = "https://www.city.osaka.lg.jp/fukushi/cmsfiles/contents/0000370/370519/6csv.csv";
-
     const offices = [];
-
-    const wardSelect = document.getElementById("wardFilter");
-    const typeFilter = document.getElementById("typeFilter");
-    const salesStatusFilter = document.getElementById("salesStatusFilter");
-    const todayFilter = document.getElementById("todayFilter");
-    const keywordInput = document.getElementById("keyword");
-    const placeSearchInput = document.getElementById("placeSearch");
-    const statusBox = document.getElementById("statusBox");
-    const csvInput = document.getElementById("csvInput");
-    const dailyReportEl = document.getElementById("dailyReport");
-    const listEl = document.getElementById("list");
-
-    const totalCountEl = document.getElementById("totalCount");
-    const todayCountEl = document.getElementById("todayCount");
-    const visitedCountEl = document.getElementById("visitedCount");
-    const remainingCountEl = document.getElementById("remainingCount");
-    const calledCountEl = document.getElementById("calledCount");
-    const hotCountEl = document.getElementById("hotCount");
 
     const OSAKA_WARDS = [
       "北区","都島区","福島区","此花区","中央区","西区","港区","大正区","天王寺区","浪速区",
@@ -431,6 +220,23 @@
       "平野区":["平野駅","喜連瓜破駅","出戸駅"],
       "西成区":["天下茶屋駅","岸里駅","花園町駅"]
     };
+
+    const wardSelect = document.getElementById("wardFilter");
+    const typeFilter = document.getElementById("typeFilter");
+    const salesStatusFilter = document.getElementById("salesStatusFilter");
+    const todayFilter = document.getElementById("todayFilter");
+    const keywordInput = document.getElementById("keyword");
+    const placeSearchInput = document.getElementById("placeSearch");
+    const statusBox = document.getElementById("statusBox");
+    const csvInput = document.getElementById("csvInput");
+    const dailyReportEl = document.getElementById("dailyReport");
+    const listEl = document.getElementById("list");
+    const totalCountEl = document.getElementById("totalCount");
+    const todayCountEl = document.getElementById("todayCount");
+    const visitedCountEl = document.getElementById("visitedCount");
+    const remainingCountEl = document.getElementById("remainingCount");
+    const calledCountEl = document.getElementById("calledCount");
+    const hotCountEl = document.getElementById("hotCount");
 
     function rebuildWardOptions(){
       const wards = [...new Set(offices.map(o => o.ward).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ja"));
@@ -488,6 +294,15 @@
       return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
     }
 
+    function wardFromAddress(address){
+      return OSAKA_WARDS.find(w => String(address || "").includes(w)) || "";
+    }
+
+    function buildKeywords(ward, name){
+      return [ward, name, ...(WARD_STATIONS[ward] || [])].join(" ");
+    }
+
+    function setStatus(text){ statusBox.innerHTML = text; }
     function getVisitState(id){ return localStorage.getItem("visit_" + id) === "1"; }
     function setVisitState(id, value){ localStorage.setItem("visit_" + id, value ? "1" : "0"); }
     function getMemo(id){ return localStorage.getItem("memo_" + id) || ""; }
@@ -511,7 +326,6 @@
     function googleMapsWalkingUrl(address){
       return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}&travelmode=walking`;
     }
-
     function googleMapsTransitUrl(address){
       return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}&travelmode=transit`;
     }
@@ -535,26 +349,6 @@
     function formatDistance(km){
       if(km < 1) return `${Math.round(km * 1000)}m`;
       return `${km.toFixed(2)}km`;
-    }
-
-    function setStatus(text){
-      statusBox.innerHTML = text;
-    }
-
-    function updateSummary(data){
-      const total = data.length;
-      const today = data.filter(o => isTodayTarget(o.id)).length;
-      const visited = data.filter(o => getVisitState(o.id)).length;
-      const remaining = total - visited;
-      const called = data.filter(o => getSalesStatus(o.id) === "電話した").length;
-      const hot = data.filter(o => getSalesStatus(o.id) === "見込みあり").length;
-
-      totalCountEl.textContent = `全件: ${total}`;
-      todayCountEl.textContent = `今日予定: ${today}`;
-      visitedCountEl.textContent = `訪問済み: ${visited}`;
-      remainingCountEl.textContent = `未訪問: ${remaining}`;
-      calledCountEl.textContent = `電話した: ${called}`;
-      hotCountEl.textContent = `見込みあり: ${hot}`;
     }
 
     function getFilteredData(){
@@ -583,6 +377,15 @@
       });
     }
 
+    function updateSummary(data){
+      totalCountEl.textContent = `全件: ${data.length}`;
+      todayCountEl.textContent = `今日予定: ${data.filter(o => isTodayTarget(o.id)).length}`;
+      visitedCountEl.textContent = `訪問済み: ${data.filter(o => getVisitState(o.id)).length}`;
+      remainingCountEl.textContent = `未訪問: ${data.filter(o => !getVisitState(o.id)).length}`;
+      calledCountEl.textContent = `電話した: ${data.filter(o => getSalesStatus(o.id) === "電話した").length}`;
+      hotCountEl.textContent = `見込みあり: ${data.filter(o => getSalesStatus(o.id) === "見込みあり").length}`;
+    }
+
     function clearMarkers(){
       markers.forEach(m => map.removeLayer(m));
       markers = [];
@@ -596,15 +399,8 @@
     function markerColorByType(type){
       if(type === "総合相談窓口（ブランチ）") return "#f97316";
       if(type === "居宅介護支援事業所") return "#16a34a";
+      if(type === "訪問介護") return "#0f9fb8";
       return "#2146d0";
-    }
-
-    function markCalled(office){
-      setSalesStatus(office.id, "電話した");
-      setCallTime(office.id, nowTimeStr());
-      renderListAndMap(currentRenderedData);
-      updateSummary(currentRenderedData);
-      setStatus(`${office.name} を「電話した」に更新しました。`);
     }
 
     function renderListAndMap(data){
@@ -622,8 +418,6 @@
         const salesStatus = getSalesStatus(office.id);
         const callTime = getCallTime(office.id);
 
-        const badgePending = office.needsGeocode ? '<span class="badge pending">座標取得待ち</span>' : '';
-
         const item = document.createElement("div");
         item.className = "card" + (visited ? " visited" : "") + (today ? " today" : "");
 
@@ -635,9 +429,7 @@
 
         item.innerHTML = `
           <div class="topline">
-            <div style="flex:1;">
-              <div class="name">${office.name}</div>
-            </div>
+            <div style="flex:1;"><div class="name">${office.name}</div></div>
             <div class="order-badge">${index + 1}</div>
           </div>
 
@@ -653,7 +445,6 @@
           <div class="badge-row">
             <span class="badge">${office.type}</span>
             <span class="badge ${statusClass(salesStatus)}">${salesStatus}</span>
-            ${badgePending}
             ${today ? '<span class="badge todaybadge">今日回る先</span>' : ""}
             ${visited ? '<span class="badge done">訪問済み</span>' : ""}
           </div>
@@ -665,12 +456,8 @@
           </div>
 
           <div class="action-row">
-            <label class="visit-check">
-              <input type="checkbox" class="visit-toggle" ${visited ? "checked" : ""}> 訪問済み
-            </label>
-            <label class="visit-check">
-              <input type="checkbox" class="today-toggle" ${today ? "checked" : ""}> 今日回る
-            </label>
+            <label class="visit-check"><input type="checkbox" class="visit-toggle" ${visited ? "checked" : ""}> 訪問済み</label>
+            <label class="visit-check"><input type="checkbox" class="today-toggle" ${today ? "checked" : ""}> 今日回る</label>
           </div>
 
           <div class="action-row">
@@ -704,9 +491,7 @@
           ${office.ward}<br>
           ${office.type}<br>
           ${office.address}<br>
-          <a href="tel:${String(office.phone || "").replace(/-/g, "")}">${office.phone || ""}</a><br>
-          <a href="${googleMapsWalkingUrl(office.address)}" target="_blank" rel="noopener noreferrer">徒歩ルート</a><br>
-          <a href="${googleMapsTransitUrl(office.address)}" target="_blank" rel="noopener noreferrer">バス・電車ルート</a>
+          <a href="tel:${String(office.phone || "").replace(/-/g, "")}">${office.phone || ""}</a>
         `);
 
         markers.push(marker);
@@ -721,6 +506,7 @@
             e.target.classList.contains("next-btn") ||
             e.target.classList.contains("auto-call-link")
           ) return;
+
           document.querySelectorAll(".card").forEach(c => c.classList.remove("active"));
           item.classList.add("active");
           map.setView([office.lat, office.lng], 16);
@@ -730,41 +516,35 @@
         item.querySelector(".visit-toggle").addEventListener("change", (e) => {
           setVisitState(office.id, e.target.checked);
           renderListAndMap(currentRenderedData);
-          updateSummary(currentRenderedData);
         });
-
         item.querySelector(".today-toggle").addEventListener("change", (e) => {
           setTodayTarget(office.id, e.target.checked);
           renderListAndMap(currentRenderedData);
-          updateSummary(currentRenderedData);
         });
-
         item.querySelectorAll("[data-status]").forEach(btn => {
           btn.addEventListener("click", (e) => {
             e.stopPropagation();
             setSalesStatus(office.id, btn.dataset.status);
             if(btn.dataset.status === "電話した") setCallTime(office.id, nowTimeStr());
             renderListAndMap(currentRenderedData);
-            updateSummary(currentRenderedData);
           });
         });
-
         item.querySelector(".memo-box").addEventListener("input", (e) => {
           setMemo(office.id, e.target.value);
         });
-
         item.querySelector(".next-btn").addEventListener("click", (e) => {
           e.stopPropagation();
           jumpToNextUnvisited(index + 1);
         });
-
         item.querySelector(".auto-call-link").addEventListener("click", () => {
-          markCalled(office);
+          setSalesStatus(office.id, "電話した");
+          setCallTime(office.id, nowTimeStr());
+          renderListAndMap(currentRenderedData);
         });
       });
 
       if(linePoints.length >= 2){
-        routeLine = L.polyline(linePoints, { weight: 4, opacity: 0.7 }).addTo(map);
+        routeLine = L.polyline(linePoints, { weight:4, opacity:0.7 }).addTo(map);
       }
 
       updateSummary(data);
@@ -796,11 +576,67 @@
       setStatus("表示をリセットしました。");
     }
 
-    function nearestNeighborSort(startPoint, items){
-      const remaining = [...items];
+    async function getCurrentLocation(){
+      if(!navigator.geolocation){
+        alert("この端末では現在地取得に対応していません。");
+        return;
+      }
+      setStatus("現在地を取得しています…");
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          currentPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          if(userMarker) map.removeLayer(userMarker);
+          if(searchMarker){ map.removeLayer(searchMarker); searchMarker = null; }
+          userMarker = L.marker([currentPosition.lat, currentPosition.lng]).addTo(map).bindPopup("現在地").openPopup();
+          map.setView([currentPosition.lat, currentPosition.lng], 15);
+          setStatus("現在地を取得しました。");
+        },
+        () => {
+          setStatus("現在地を取得できませんでした。");
+        },
+        { enableHighAccuracy:true, timeout:10000, maximumAge:0 }
+      );
+    }
+
+    async function searchPlaceAndMove(){
+      const query = placeSearchInput.value.trim();
+      if(!query){
+        alert("検索したい場所を入力してください。");
+        return;
+      }
+      try{
+        const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=ja&q=${encodeURIComponent(query + " 大阪市")}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if(!data.length){
+          alert("場所が見つかりませんでした。");
+          return;
+        }
+        const result = data[0];
+        currentPosition = { lat: parseFloat(result.lat), lng: parseFloat(result.lon) };
+
+        if(searchMarker) map.removeLayer(searchMarker);
+        if(userMarker){ map.removeLayer(userMarker); userMarker = null; }
+
+        searchMarker = L.marker([currentPosition.lat, currentPosition.lng]).addTo(map).bindPopup(`検索地点<br>${result.display_name}`).openPopup();
+        map.setView([currentPosition.lat, currentPosition.lng], 15);
+        setStatus(`検索地点を表示しました。<br>${result.display_name}`);
+      }catch(e){
+        alert("場所検索に失敗しました。");
+      }
+    }
+
+    function sortByWalkingOrder(){
+      const filtered = getFilteredData();
+      if(!filtered.length || !currentPosition){
+        alert("先に現在地取得か場所検索をしてください。");
+        return;
+      }
+      const remaining = filtered.map(x => ({ ...x, distanceFromPrev:null, distanceFromStart:null }));
       const ordered = [];
-      let current = { lat: startPoint.lat, lng: startPoint.lng };
-      while(remaining.length > 0){
+      let current = { ...currentPosition };
+
+      while(remaining.length){
         let bestIndex = 0;
         let bestDistance = Infinity;
         remaining.forEach((office, i) => {
@@ -812,138 +648,50 @@
         });
         const next = remaining.splice(bestIndex, 1)[0];
         next.distanceFromPrev = bestDistance;
-        if(ordered.length === 0) next.distanceFromStart = bestDistance;
+        if(!ordered.length) next.distanceFromStart = bestDistance;
         ordered.push(next);
         current = { lat: next.lat, lng: next.lng };
       }
-      return ordered;
-    }
 
-    function getCurrentLocation(){
-      if(!navigator.geolocation){
-        alert("この端末では現在地取得に対応していません。");
-        return;
-      }
-      setStatus("現在地を取得しています…");
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          currentPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-
-          if(userMarker) map.removeLayer(userMarker);
-          if(searchMarker){ map.removeLayer(searchMarker); searchMarker = null; }
-
-          userMarker = L.marker([currentPosition.lat, currentPosition.lng]).addTo(map).bindPopup("現在地").openPopup();
-          map.setView([currentPosition.lat, currentPosition.lng], 15);
-
-          const address = await reverseGeocode(currentPosition.lat, currentPosition.lng);
-          setStatus(address ? `現在地を取得しました。<br>${address}` : "現在地を取得しました。");
-        },
-        () => {
-          setStatus("現在地を取得できませんでした。");
-          alert("現在地を取得できませんでした。");
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
-    }
-
-    async function reverseGeocode(lat, lng){
-      try{
-        const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=ja`;
-        const res = await fetch(url);
-        const data = await res.json();
-        return data.display_name || "";
-      }catch(e){
-        return "";
-      }
-    }
-
-    async function geocodePlace(query){
-      try{
-        const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=ja&q=${encodeURIComponent(query + " 大阪市")}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if(data && data.length > 0){
-          return {
-            lat: parseFloat(data[0].lat),
-            lng: parseFloat(data[0].lon),
-            name: data[0].display_name
-          };
-        }
-      }catch(e){
-        console.log(e);
-      }
-      return null;
-    }
-
-    async function searchPlaceAndMove(){
-      const query = placeSearchInput.value.trim();
-      if(!query){
-        alert("検索したい場所を入力してください。");
-        return;
-      }
-      const result = await geocodePlace(query);
-      if(!result){
-        alert("場所が見つかりませんでした。");
-        return;
-      }
-      currentPosition = { lat: result.lat, lng: result.lng };
-
-      if(searchMarker) map.removeLayer(searchMarker);
-      if(userMarker){ map.removeLayer(userMarker); userMarker = null; }
-
-      searchMarker = L.marker([result.lat, result.lng]).addTo(map).bindPopup(`検索地点<br>${result.name}`).openPopup();
-      map.setView([result.lat, result.lng], 15);
-      setStatus(`検索地点を表示しました。<br>${result.name}`);
-    }
-
-    function sortByWalkingOrder(){
-      const filtered = getFilteredData();
-      if(filtered.length === 0){
-        alert("該当する営業先がありません。");
-        return;
-      }
-      if(!currentPosition){
-        alert("先に現在地取得か場所検索をしてください。");
-        return;
-      }
-      const ordered = nearestNeighborSort(
-        currentPosition,
-        filtered.map(x => ({ ...x, distanceFromPrev:null, distanceFromStart:null }))
-      );
       renderListAndMap(ordered);
       setStatus("現在地から近い順に並べ替えました。");
     }
 
     function sortTodayByWalkingOrder(){
-      const todayItems = getFilteredData().filter(o => isTodayTarget(o.id));
-      if(todayItems.length === 0){
-        alert("今日回る先がありません。");
+      const data = getFilteredData().filter(o => isTodayTarget(o.id));
+      if(!data.length || !currentPosition){
+        alert("今日回る先がないか、現在地がありません。");
         return;
       }
-      if(!currentPosition){
-        alert("先に現在地取得か場所検索をしてください。");
-        return;
+      const remaining = data.map(x => ({ ...x, distanceFromPrev:null, distanceFromStart:null }));
+      const ordered = [];
+      let current = { ...currentPosition };
+
+      while(remaining.length){
+        let bestIndex = 0;
+        let bestDistance = Infinity;
+        remaining.forEach((office, i) => {
+          const d = haversine(current.lat, current.lng, office.lat, office.lng);
+          if(d < bestDistance){
+            bestDistance = d;
+            bestIndex = i;
+          }
+        });
+        const next = remaining.splice(bestIndex, 1)[0];
+        next.distanceFromPrev = bestDistance;
+        if(!ordered.length) next.distanceFromStart = bestDistance;
+        ordered.push(next);
+        current = { lat: next.lat, lng: next.lng };
       }
-      const ordered = nearestNeighborSort(
-        currentPosition,
-        todayItems.map(x => ({ ...x, distanceFromPrev:null, distanceFromStart:null }))
-      );
+
       renderListAndMap(ordered);
       setStatus("今日回る先だけを近い順に並べ替えました。");
     }
 
     function jumpToNextUnvisited(startIndex = 0){
       const data = currentRenderedData;
-      if(data.length === 0) return;
-      let nextIndex = -1;
-      for(let i = startIndex; i < data.length; i++){
-        if(!getVisitState(data[i].id)){ nextIndex = i; break; }
-      }
-      if(nextIndex === -1){
-        for(let i = 0; i < startIndex; i++){
-          if(!getVisitState(data[i].id)){ nextIndex = i; break; }
-        }
-      }
+      let nextIndex = data.findIndex((o, i) => i >= startIndex && !getVisitState(o.id));
+      if(nextIndex === -1) nextIndex = data.findIndex(o => !getVisitState(o.id));
       if(nextIndex === -1){
         alert("すべて訪問済みです。");
         return;
@@ -957,34 +705,14 @@
         card.scrollIntoView({ behavior:"smooth", block:"center" });
       }
       if(markers[nextIndex]) markers[nextIndex].openPopup();
-      setStatus(`次の未訪問先は「${office.name}」です。`);
     }
 
     function generateDailyReport(){
       const visible = currentRenderedData;
-      const todayItems = visible.filter(o => isTodayTarget(o.id));
-      const visited = visible.filter(o => getVisitState(o.id));
-      const called = visible.filter(o => getSalesStatus(o.id) === "電話した");
-      const absent = visible.filter(o => getSalesStatus(o.id) === "不在");
-      const revisit = visible.filter(o => getSalesStatus(o.id) === "再訪問");
-      const hot = visible.filter(o => getSalesStatus(o.id) === "見込みあり");
-      const contract = visible.filter(o => getSalesStatus(o.id) === "契約候補");
-
       const d = new Date();
       const dateText = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
 
-      let report = "";
-      report += `【営業日報】\n`;
-      report += `日付：${dateText}\n\n`;
-      report += `表示件数：${visible.length}件\n`;
-      report += `今日予定：${todayItems.length}件\n`;
-      report += `訪問済み：${visited.length}件\n`;
-      report += `電話した：${called.length}件\n`;
-      report += `不在：${absent.length}件\n`;
-      report += `再訪問：${revisit.length}件\n`;
-      report += `見込みあり：${hot.length}件\n`;
-      report += `契約候補：${contract.length}件\n\n`;
-
+      let report = `【営業日報】\n日付：${dateText}\n\n`;
       visible.forEach((office, idx) => {
         report += `${idx + 1}. ${office.name}\n`;
         report += `区：${office.ward}\n`;
@@ -992,69 +720,12 @@
         report += `状態：${getSalesStatus(office.id)}\n`;
         report += `訪問済み：${getVisitState(office.id) ? "はい" : "いいえ"}\n`;
         report += `今日予定：${isTodayTarget(office.id) ? "はい" : "いいえ"}\n`;
-        report += `電話時刻：${getCallTime(office.id) || "未記録"}\n`;
         report += `電話：${office.phone || ""}\n`;
         report += `住所：${office.address}\n`;
-        report += `出典：${office.source || ""}\n`;
-        report += `確認日：${office.checked || ""}\n`;
         report += `メモ：${getMemo(office.id) || "なし"}\n\n`;
       });
-
       dailyReportEl.value = report;
       setStatus("日報を作成しました。");
-    }
-
-    async function copyDailyReport(){
-      const text = dailyReportEl.value.trim();
-      if(!text){
-        alert("先に日報を作成してください。");
-        return;
-      }
-      try{
-        await navigator.clipboard.writeText(text);
-        alert("日報をコピーしました。");
-      }catch(e){
-        dailyReportEl.select();
-        document.execCommand("copy");
-        alert("日報をコピーしました。");
-      }
-    }
-
-    function exportSalesData(){
-      const rows = [[
-        "区名","種別","事業所名","住所","電話","営業状態","訪問済み","今日予定","電話時刻","出典","確認日","検索補助語","メモ"
-      ]];
-
-      currentRenderedData.forEach(office => {
-        rows.push([
-          office.ward, office.type, office.name, office.address, office.phone || "",
-          getSalesStatus(office.id),
-          getVisitState(office.id) ? "はい" : "いいえ",
-          isTodayTarget(office.id) ? "はい" : "いいえ",
-          getCallTime(office.id),
-          office.source || "", office.checked || "", office.keywords || "",
-          getMemo(office.id).replace(/\n/g, " ")
-        ]);
-      });
-
-      const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const link = document.createElement("a");
-      const url = URL.createObjectURL(blob);
-      link.href = url;
-      link.download = "eigyo_app_osakashi_complete.csv";
-      link.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function guessColumnIndex(headers, candidates){
-      const normalized = headers.map(h => normalizeText(h));
-      for(const c of candidates){
-        const needle = normalizeText(c);
-        const idx = normalized.findIndex(h => h.includes(needle));
-        if(idx !== -1) return idx;
-      }
-      return -1;
     }
 
     function parseCsvLine(line){
@@ -1081,224 +752,181 @@
       return result.map(v => v.trim());
     }
 
-    function wardFromAddress(address){
-      return OSAKA_WARDS.find(w => String(address || "").includes(w)) || "";
-    }
+    async function decodeCsvFile(file){
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
 
-    function buildKeywords(ward, name){
-      return [ward, name, ...(WARD_STATIONS[ward] || [])].join(" ");
-    }
-
-    function getGeocodeCacheKey(address){
-      return `geo_cache_${normalizeText(address)}`;
-    }
-
-    function getCachedGeocode(address){
       try{
-        const raw = localStorage.getItem(getGeocodeCacheKey(address));
-        return raw ? JSON.parse(raw) : null;
-      }catch(e){
-        return null;
-      }
-    }
-
-    function setCachedGeocode(address, lat, lng){
-      try{
-        localStorage.setItem(getGeocodeCacheKey(address), JSON.stringify({ lat, lng }));
+        const utf8Text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+        return utf8Text;
       }catch(e){}
-    }
 
-    function clearGeocodeCache(){
-      const keys = [];
-      for(let i = 0; i < localStorage.length; i++){
-        const key = localStorage.key(i);
-        if(key && key.startsWith("geo_cache_")) keys.push(key);
-      }
-      keys.forEach(k => localStorage.removeItem(k));
-      alert("座標キャッシュを削除しました。");
-    }
-
-    function sleep(ms){
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    async function geocodeAddressNominatim(address){
-      const cached = getCachedGeocode(address);
-      if(cached && Number.isFinite(cached.lat) && Number.isFinite(cached.lng)) return cached;
-
-      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=ja&q=${encodeURIComponent(address)}`;
-      const res = await fetch(url, { cache: "no-store" });
-      if(!res.ok) return null;
-      const data = await res.json();
-      if(!Array.isArray(data) || data.length === 0) return null;
-
-      const lat = parseFloat(data[0].lat);
-      const lng = parseFloat(data[0].lon);
-      if(Number.isNaN(lat) || Number.isNaN(lng)) return null;
-
-      setCachedGeocode(address, lat, lng);
-      return { lat, lng };
-    }
-
-    async function geocodePendingOffices(){
-      const pending = offices.filter(o => o.needsGeocode);
-      if(pending.length === 0) return;
-
-      for(let i = 0; i < pending.length; i++){
-        const office = pending[i];
-        setStatus(`住所から座標を取得中… ${i + 1}/${pending.length}<br>${office.name}`);
-
-        const result = await geocodeAddressNominatim(office.address);
-        if(result){
-          office.lat = result.lat;
-          office.lng = result.lng;
-          office.needsGeocode = false;
-        }
-        renderListAndMap(offices);
-        await sleep(1100);
-      }
-      setStatus("住所からの座標取得が完了しました。");
-    }
-
-    function importOsakaCityCsvText(text){
-      const lines = text.split(/\r?\n/).filter(Boolean);
-      if(lines.length < 2) return 0;
-
-      let imported = 0;
-      for(let i = 1; i < lines.length; i++){
-        const cols = parseCsvLine(lines[i]);
-        if(cols.length < 14) continue;
-
-        const typeRaw = cols[0] || "";
-        const ward = cols[10] || "";
-        const name = cols[11] || "";
-        const address = cols[12] || "";
-        const phone = cols[13] || "";
-
-        if(!name || !address) continue;
-
-        let type = "";
-        if(normalizeText(typeRaw).includes(normalizeText("地域包括支援センター"))){
-          type = "地域包括支援センター";
-        } else if(
-          normalizeText(typeRaw).includes(normalizeText("総合相談窓口")) ||
-          normalizeText(name).includes(normalizeText("ブランチ"))
-        ){
-          type = "総合相談窓口（ブランチ）";
-        } else {
-          continue;
-        }
-
-        const id = safeId(`${ward}-${name}-${phone}-${type}`);
-        if(offices.some(o => o.id === id)) continue;
-
-        const cached = getCachedGeocode(address);
-
-        offices.push({
-          id,
-          ward: ward || wardFromAddress(address) || "",
-          type,
-          name,
-          address,
-          phone,
-          lat: cached?.lat ?? 34.6937,
-          lng: cached?.lng ?? 135.5023,
-          source: "大阪市 地域包括・ブランチ一覧CSV",
-          checked: "2026-04-10",
-          keywords: buildKeywords(ward || wardFromAddress(address) || "", name),
-          needsGeocode: !(cached && Number.isFinite(cached.lat) && Number.isFinite(cached.lng))
-        });
-        imported++;
-      }
-      return imported;
-    }
-
-    async function loadOsakaCityData(){
-      const cityRes = await fetch(OSAKA_CITY_OFFICIAL_CSV, { cache: "no-store" });
-      if(!cityRes.ok) throw new Error("大阪市CSVの読込に失敗しました。");
-      return importOsakaCityCsvText(await cityRes.text());
-    }
-
-    async function loadAllOfficialData(reset = false){
-      setStatus("大阪市の地域包括・ブランチを自動読込しています…");
       try{
-        if(reset) offices.length = 0;
-        else offices.length = 0;
+        const sjisText = new TextDecoder("shift-jis").decode(bytes);
+        return sjisText;
+      }catch(e){}
 
-        const importedCity = await loadOsakaCityData();
+      return new TextDecoder("utf-8").decode(bytes);
+    }
+
+    async function loadCityCsv(){
+      setStatus("大阪市の地域包括・ブランチを読み込んでいます…");
+      try{
+        const res = await fetch(OSAKA_CITY_OFFICIAL_CSV, { cache: "no-store" });
+        const text = await res.text();
+        let imported = 0;
+        const lines = text.split(/\r?\n/).filter(Boolean);
+
+        for(let i = 1; i < lines.length; i++){
+          const cols = parseCsvLine(lines[i]);
+          if(cols.length < 14) continue;
+
+          const typeRaw = cols[0] || "";
+          const ward = cols[10] || "";
+          const name = cols[11] || "";
+          const address = cols[12] || "";
+          const phone = cols[13] || "";
+
+          if(!name || !address) continue;
+
+          let type = "";
+          if(normalizeText(typeRaw).includes(normalizeText("地域包括支援センター"))){
+            type = "地域包括支援センター";
+          } else if(
+            normalizeText(typeRaw).includes(normalizeText("総合相談窓口")) ||
+            normalizeText(name).includes(normalizeText("ブランチ"))
+          ){
+            type = "総合相談窓口（ブランチ）";
+          } else {
+            continue;
+          }
+
+          const id = safeId(`${ward}-${name}-${phone}-${type}`);
+          if(offices.some(o => o.id === id)) continue;
+
+          offices.push({
+            id,
+            ward: ward || wardFromAddress(address),
+            type,
+            name,
+            address,
+            phone,
+            lat: 34.6937,
+            lng: 135.5023,
+            source: "大阪市CSV",
+            checked: "2026-04-10",
+            keywords: buildKeywords(ward || wardFromAddress(address), name)
+          });
+          imported++;
+        }
+
         rebuildWardOptions();
         renderListAndMap(offices);
-        setStatus(`地域包括・ブランチ ${importedCity} 件を読み込みました。住所から座標を取得します…`);
-
-        await geocodePendingOffices();
-        renderListAndMap(offices);
-      }catch(err){
-        console.error(err);
-        setStatus("自動読込に失敗しました。");
+        setStatus(`地域包括・ブランチを ${imported} 件読み込みました。`);
+      }catch(e){
+        console.error(e);
+        setStatus("大阪市CSVの読み込みに失敗しました。");
       }
     }
 
-    async function loadUploadedKyotakuCsv(event){
-      const file = event.target.files?.[0];
-      if(!file){
-        alert("CSVファイルを選んでください。");
-        return;
-      }
-
-      const text = await file.text();
-      const lines = text.split(/\r?\n/).filter(Boolean);
-      if(lines.length < 2){
-        alert("CSVの中身が見つかりません。");
+    async function loadSelectedCsvs(event){
+      const files = Array.from(event.target.files || []);
+      if(!files.length){
+        alert("CSVを選んでください。");
         return;
       }
 
       let imported = 0;
 
-      for(let i = 1; i < lines.length; i++){
-        const cols = parseCsvLine(lines[i]);
-        if(cols.length < 8) continue;
+      for(const file of files){
+        const text = await decodeCsvFile(file);
+        const lines = text.split(/\r?\n/).filter(Boolean);
+        if(lines.length < 2) continue;
 
-        const jigyoshoNo = cols[0] || "";
-        const name = cols[1] || "";
-        const address = cols[3] || "";
-        const phone = cols[4] || "";
-        const checked = cols[6] || "";
-        const houjin = cols[7] || "";
+        const header = parseCsvLine(lines[0]).join("|");
 
-        if(!name || !address) continue;
+        if(header.includes("事業所名称") && header.includes("所在地") && header.includes("電話番号")){
+          for(let i = 1; i < lines.length; i++){
+            const cols = parseCsvLine(lines[i]);
+            if(cols.length < 8) continue;
 
-        const ward = wardFromAddress(address);
-        if(!ward) continue;
+            const jigyoshoNo = cols[0] || "";
+            const name = cols[1] || "";
+            const address = cols[3] || "";
+            const phone = cols[4] || "";
+            const checked = cols[6] || "";
+            const houjin = cols[7] || "";
 
-        const cached = getCachedGeocode(address);
+            if(!name || !address) continue;
+            const ward = wardFromAddress(address);
+            if(!ward) continue;
 
-        const id = safeId(`${ward}-${name}-${jigyoshoNo}`);
-        if(offices.some(o => o.id === id)) continue;
+            const id = safeId(`${ward}-${name}-${jigyoshoNo}`);
+            if(offices.some(o => o.id === id)) continue;
 
-        offices.push({
-          id,
-          ward,
-          type: "居宅介護支援事業所",
-          name,
-          address,
-          phone,
-          lat: cached?.lat ?? 34.6937,
-          lng: cached?.lng ?? 135.5023,
-          source: `手動読込CSV (${houjin || "法人名なし"})`,
-          checked: checked || todayStr(),
-          keywords: buildKeywords(ward, name),
-          needsGeocode: !(cached && Number.isFinite(cached.lat) && Number.isFinite(cached.lng))
-        });
+            offices.push({
+              id,
+              ward,
+              type: "訪問介護",
+              name,
+              address,
+              phone,
+              lat: 34.6937,
+              lng: 135.5023,
+              source: `訪問介護CSV (${houjin || "法人名なし"})`,
+              checked: checked || todayStr(),
+              keywords: buildKeywords(ward, name)
+            });
+            imported++;
+          }
+        } else if(header.includes("事業所_名称（漢字）") && header.includes("事業所_住所（漢字）") && header.includes("事業所_電話番号")){
+          const colsHeader = parseCsvLine(lines[0]);
+          const idxName = colsHeader.indexOf("事業所_名称（漢字）");
+          const idxAddr = colsHeader.indexOf("事業所_住所（漢字）");
+          const idxPhone = colsHeader.indexOf("事業所_電話番号");
+          const idxNo = colsHeader.indexOf("事業所番号");
+          const idxDate = colsHeader.indexOf("指定有効開始年月日");
+          const idxServiceCode = colsHeader.indexOf("サービス種別コード");
 
-        imported++;
+          for(let i = 1; i < lines.length; i++){
+            const cols = parseCsvLine(lines[i]);
+            if(cols.length <= Math.max(idxName, idxAddr, idxPhone)) continue;
+
+            const name = cols[idxName] || "";
+            const address = cols[idxAddr] || "";
+            const phone = cols[idxPhone] || "";
+            const jigyoshoNo = cols[idxNo] || "";
+            const checked = cols[idxDate] || "";
+            const serviceCode = cols[idxServiceCode] || "";
+
+            if(!name || !address) continue;
+            const ward = wardFromAddress(address);
+            if(!ward) continue;
+
+            const id = safeId(`${ward}-${name}-${jigyoshoNo}-${serviceCode}`);
+            if(offices.some(o => o.id === id)) continue;
+
+            offices.push({
+              id,
+              ward,
+              type: "居宅介護支援事業所",
+              name,
+              address,
+              phone,
+              lat: 34.6937,
+              lng: 135.5023,
+              source: `居宅CSV (${file.name})`,
+              checked: checked || todayStr(),
+              keywords: buildKeywords(ward, name)
+            });
+            imported++;
+          }
+        }
       }
 
       rebuildWardOptions();
       renderListAndMap(offices);
-      setStatus(`${imported}件の居宅を追加しました。住所から座標を順番に取得します…`);
-
-      await geocodePendingOffices();
-      renderListAndMap(offices);
+      setStatus(`${imported}件 追加しました。`);
     }
 
     function importSimpleCSV(){
@@ -1309,6 +937,7 @@
       }
       const lines = text.split(/\r?\n/).filter(Boolean);
       let count = 0;
+
       lines.forEach((line, index) => {
         const cols = line.split(",").map(v => v.trim());
         if(index === 0 && cols[0] === "区名") return;
@@ -1326,29 +955,17 @@
           id, ward, type, name, address, phone, lat, lng,
           source: source || "CSV追加",
           checked: checked || todayStr(),
-          keywords: keywords || "",
-          needsGeocode: false
+          keywords: keywords || ""
         });
         count++;
       });
+
       rebuildWardOptions();
       renderListAndMap(offices);
       setStatus(`${count}件 追加しました。`);
     }
 
     renderListAndMap(offices);
-    setTimeout(() => {
-      map.invalidateSize();
-      fitVisibleMarkers();
-    }, 400);
-
-    window.addEventListener("load", async () => {
-      try {
-        await loadAllOfficialData();
-      } catch (e) {
-        console.error(e);
-      }
-    });
   </script>
 </body>
 </html>
